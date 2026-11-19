@@ -26,7 +26,7 @@ The default track control points, in \((x_i,h_i)\) meters, are:
 
 \[
 (0,30),\ (10,20),\ (20,10),\ (30,2.5),\ (40,0),\
-(50,2.5),\ (60,10),\ (70,22.5),\ (80,25)
+(50,2.5),\ (60,10),\ (70,22.5),\ (80,27)
 \]
 
 There are always nine control points; users shape the track by moving them. The first point is the starting crest, and its height is \(h_0\). Gravity is a fixed physical constant, not a user input. An invalid drag is not applied; the editor keeps the last valid track and explains the constraint.

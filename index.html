@@ -228,9 +228,17 @@
       fill: white;
       stroke: var(--blue);
       stroke-width: 3;
+      cursor: grab;
+      touch-action: none;
     }
 
-    .car-marker { fill: var(--navy); stroke: white; stroke-width: 2; }
+    .control-point:focus { stroke: #0f3f91; stroke-width: 5; outline: none; }
+    .control-point:active { cursor: grabbing; }
+    .car-body { fill: var(--navy); stroke: white; stroke-width: 2; }
+    .failure-mark { fill: var(--red); stroke: white; stroke-width: 2; }
+    .chart-limit { stroke: var(--red); stroke-dasharray: 5 4; stroke-width: 1.5; }
+    .chart-failure { stroke: var(--red); stroke-dasharray: 3 3; stroke-width: 2; }
+    .progress-line { stroke: var(--navy); stroke-dasharray: 2 3; stroke-width: 1.5; }
 
     .editor-toolbar {
       min-height: 76px;
@@ -445,55 +453,35 @@
         <span class="editor-hint">The car starts at the first hill</span>
       </div>
       <div class="track-wrap">
-        <svg class="track-svg" viewBox="0 0 920 390" role="img" aria-label="Roller coaster track editor">
-          <g class="gridline">
-            <path d="M75 320H890 M75 255H890 M75 190H890 M75 125H890 M75 60H890"></path>
-            <path d="M75 40V320 M238 40V320 M401 40V320 M564 40V320 M727 40V320 M890 40V320"></path>
-          </g>
-          <g class="axis-label">
-            <text x="38" y="324">0</text><text x="30" y="259">25</text>
-            <text x="30" y="194">50</text><text x="30" y="129">75</text>
-            <text x="24" y="64">100</text><text x="75" y="350">0</text>
-            <text x="229" y="350">100</text><text x="392" y="350">200</text>
-            <text x="555" y="350">300</text><text x="718" y="350">400</text>
-            <text x="868" y="350">500</text><text x="450" y="379">Horizontal distance (m)</text>
-            <text transform="translate(15 205) rotate(-90)">Height (m)</text>
-          </g>
-          <path class="track-path" d="M75 242 C140 269 185 300 238 307 C290 313 342 278 401 283 C455 289 510 304 564 295 C624 284 666 254 727 261 C780 266 834 257 890 255"></path>
-          <circle class="control-point" cx="75" cy="242" r="7"></circle>
-          <circle class="control-point" cx="238" cy="307" r="7"></circle>
-          <circle class="control-point" cx="401" cy="283" r="7"></circle>
-          <circle class="control-point" cx="564" cy="295" r="7"></circle>
-          <circle class="control-point" cx="727" cy="261" r="7"></circle>
-          <circle class="control-point" cx="890" cy="255" r="7"></circle>
-          <circle class="car-marker" cx="75" cy="242" r="9"></circle>
+        <svg id="trackSvg" class="track-svg" viewBox="0 0 920 390" role="img" aria-label="Editable roller coaster track">
+          <g id="trackDrawing"></g>
         </svg>
       </div>
       <div class="editor-toolbar">
         <div class="button-row">
-          <button class="button button-primary" type="button"><span class="play-icon" aria-hidden="true"></span>Start ride</button>
-          <button class="button" type="button">Pause</button>
-          <button class="button" type="button"><span class="reset-icon" aria-hidden="true"></span>Reset</button>
+          <button id="startButton" class="button button-primary" type="button"><span class="play-icon" aria-hidden="true"></span>Start ride</button>
+          <button id="pauseButton" class="button" type="button">Pause</button>
+          <button id="resetButton" class="button" type="button"><span class="reset-icon" aria-hidden="true"></span>Reset</button>
         </div>
-        <div class="status-line" role="status">Ready to ride · Drag a point to edit the track</div>
+        <div id="statusLine" class="status-line" role="status" aria-live="polite">Ready to ride · Drag a point to edit the track</div>
       </div>
     </section>
 
     <section class="metrics-grid" aria-label="Live ride readouts">
       <article class="card metric">
         <div class="metric-label">Car speed</div>
-        <div class="metric-value">0.00<span class="metric-unit">mph</span></div>
+        <div class="metric-value"><span id="speedReadout">0.00</span><span class="metric-unit">mph</span></div>
         <div class="metric-caption">At the car's current position</div>
       </article>
       <article class="card metric">
         <div class="metric-label">Vertical rider force</div>
-        <div class="metric-value">0.00<span class="metric-unit">g</span></div>
+        <div class="metric-value"><span id="gReadout">0.00</span><span class="metric-unit">g</span></div>
         <div class="metric-caption">Comfort zone: −1 g to +4 g</div>
       </article>
       <article class="card metric">
         <div class="metric-label">Track status</div>
-        <div class="metric-value">Ready</div>
-        <div class="metric-caption">No failure detected</div>
+        <div id="trackStatus" class="metric-value">Ready</div>
+        <div id="trackStatusCaption" class="metric-caption">No failure detected</div>
       </article>
     </section>
 
@@ -502,21 +490,13 @@
         <div class="card-heading">
           <div><h2>Speed along track</h2><p>Car speed · miles per hour</p></div>
         </div>
-        <svg class="chart" viewBox="0 0 500 190" role="img" aria-label="Speed plot">
-          <path class="chart-grid" d="M55 25H480 M55 65H480 M55 105H480 M55 145H480 M55 25V145"></path>
-          <g class="chart-axis"><text x="18" y="149">0</text><text x="12" y="109">20</text><text x="12" y="69">40</text><text x="12" y="29">60</text><text x="55" y="166">0</text><text x="438" y="166">Track distance (m)</text></g>
-          <path class="chart-line" d="M55 145 C115 142 145 104 190 96 S260 53 300 44 S370 51 410 62 S450 80 480 86"></path>
-        </svg>
+        <svg id="speedPlot" class="chart" viewBox="0 0 500 190" role="img" aria-label="Car speed in miles per hour by distance along the track"></svg>
       </article>
       <article class="card chart-card">
         <div class="card-heading">
           <div><h2>Vertical g-force along track</h2><p>Rider load · g</p></div>
         </div>
-        <svg class="chart" viewBox="0 0 500 190" role="img" aria-label="Vertical g-force plot">
-          <path class="chart-grid" d="M55 25H480 M55 65H480 M55 105H480 M55 145H480 M55 25V145"></path>
-          <g class="chart-axis"><text x="18" y="149">−1</text><text x="28" y="109">1</text><text x="28" y="69">3</text><text x="28" y="29">5</text><text x="55" y="166">0</text><text x="438" y="166">Track distance (m)</text></g>
-          <path class="chart-line-g" d="M55 95 C100 91 135 82 175 70 S235 49 270 57 S330 95 370 86 S430 91 480 98"></path>
-        </svg>
+        <svg id="gPlot" class="chart" viewBox="0 0 500 190" role="img" aria-label="Vertical rider g-force by distance along the track"></svg>
       </article>
     </section>
 
@@ -525,5 +505,664 @@
       <span>Idealized model · Not for real-world safety certification</span>
     </section>
   </main>
+  <script>
+    "use strict";
+
+    const GRAVITY = 9.81;
+    const METERS_PER_SECOND_TO_MPH = 2.2369362920544;
+    const SVG_NS = "http://www.w3.org/2000/svg";
+    const TRACK_AREA = { left: 75, right: 890, top: 40, bottom: 320 };
+    const DEFAULT_POINTS = [
+      { x: 0, h: 30 }, { x: 10, h: 20 }, { x: 20, h: 10 },
+      { x: 30, h: 2.5 }, { x: 40, h: 0 }, { x: 50, h: 2.5 },
+      { x: 60, h: 10 }, { x: 70, h: 22.5 }, { x: 80, h: 27 }
+    ];
+
+    const trackSvg = document.getElementById("trackSvg");
+    const trackDrawing = document.getElementById("trackDrawing");
+    const speedPlot = document.getElementById("speedPlot");
+    const gPlot = document.getElementById("gPlot");
+    const startButton = document.getElementById("startButton");
+    const pauseButton = document.getElementById("pauseButton");
+    const resetButton = document.getElementById("resetButton");
+    const speedReadout = document.getElementById("speedReadout");
+    const gReadout = document.getElementById("gReadout");
+    const statusLine = document.getElementById("statusLine");
+    const trackStatus = document.getElementById("trackStatus");
+    const trackStatusCaption = document.getElementById("trackStatusCaption");
+
+    let points = DEFAULT_POINTS.map(point => ({ ...point }));
+    let model;
+    let currentDistance = 0;
+    let rideState = "ready";
+    let pausedFrom = "running";
+    let frameId = 0;
+    let lastFrameTime = 0;
+    let elapsedTime = 0;
+    let dragIndex = -1;
+
+    function splineAt(p0, p1, p2, p3, t) {
+      const t2 = t * t;
+      const t3 = t2 * t;
+      const calculate = (a, b, c, d) => ({
+        value: 0.5 * (2 * b + (-a + c) * t + (2 * a - 5 * b + 4 * c - d) * t2 + (-a + 3 * b - 3 * c + d) * t3),
+        first: 0.5 * ((-a + c) + 2 * (2 * a - 5 * b + 4 * c - d) * t + 3 * (-a + 3 * b - 3 * c + d) * t2),
+        second: 0.5 * (2 * (2 * a - 5 * b + 4 * c - d) + 6 * (-a + 3 * b - 3 * c + d) * t)
+      });
+      const x = calculate(p0.x, p1.x, p2.x, p3.x);
+      const h = calculate(p0.h, p1.h, p2.h, p3.h);
+      const tangentSize = Math.hypot(x.first, h.first);
+      if (!Number.isFinite(tangentSize) || tangentSize < 1e-9) {
+        return null;
+      }
+      return {
+        x: x.value,
+        h: h.value,
+        theta: Math.atan2(h.first, x.first),
+        curvature: (x.first * h.second - h.first * x.second) / (tangentSize * tangentSize * tangentSize)
+      };
+    }
+
+    function interpolateSample(a, b, fraction) {
+      const mix = (key) => a[key] + (b[key] - a[key]) * fraction;
+      return {
+        x: mix("x"),
+        h: mix("h"),
+        theta: mix("theta"),
+        curvature: mix("curvature"),
+        s: mix("s")
+      };
+    }
+
+    function addRideValues(sample, startHeight) {
+      if (sample.h > startHeight + 1e-8) {
+        sample.speed = null;
+        sample.load = null;
+        return sample;
+      }
+      sample.speed = Math.sqrt(Math.max(0, 2 * GRAVITY * (startHeight - sample.h)));
+      sample.load = Math.cos(sample.theta) + sample.speed * sample.speed * sample.curvature / GRAVITY;
+      return sample;
+    }
+
+    function isOutsideLoad(load) {
+      return load > 4 + 1e-9 || load < -1 - 1e-9;
+    }
+
+    function loadFailureBetween(a, b) {
+      if (isOutsideLoad(a.load)) {
+        return { ...a, type: a.load > 4 ? "upper-g" : "lower-g" };
+      }
+      if (!isOutsideLoad(b.load)) {
+        return null;
+      }
+      const threshold = b.load > 4 ? 4 : -1;
+      const fraction = Math.max(0, Math.min(1, (threshold - a.load) / (b.load - a.load)));
+      const crossing = interpolateSample(a, b, fraction);
+      crossing.load = threshold;
+      crossing.speed = Math.sqrt(Math.max(0, 2 * GRAVITY * (a.startHeight - crossing.h)));
+      crossing.type = threshold === 4 ? "upper-g" : "lower-g";
+      return crossing;
+    }
+
+    function findFailure(samples, startHeight) {
+      const first = addRideValues({ ...samples[0], startHeight }, startHeight);
+      if (isOutsideLoad(first.load)) {
+        return { ...first, type: first.load > 4 ? "upper-g" : "lower-g" };
+      }
+      let previous = first;
+      for (let index = 1; index < samples.length; index += 1) {
+        const current = addRideValues({ ...samples[index], startHeight }, startHeight);
+        if (current.h > startHeight + 1e-8) {
+          const fraction = Math.max(0, Math.min(1, (startHeight - previous.h) / (current.h - previous.h)));
+          const turningPoint = interpolateSample(previous, current, fraction);
+          turningPoint.h = startHeight;
+          turningPoint.startHeight = startHeight;
+          addRideValues(turningPoint, startHeight);
+          const loadFailure = loadFailureBetween(previous, turningPoint);
+          if (loadFailure && loadFailure.s <= turningPoint.s + 1e-8) {
+            return loadFailure;
+          }
+          turningPoint.type = "rollback";
+          return turningPoint;
+        }
+        const loadFailure = loadFailureBetween(previous, current);
+        if (loadFailure) {
+          return loadFailure;
+        }
+        previous = current;
+      }
+      return null;
+    }
+
+    function calculateModel(candidatePoints) {
+      if (candidatePoints.length !== 9) {
+        return { error: "The track must contain exactly nine control points." };
+      }
+      for (let index = 0; index < candidatePoints.length; index += 1) {
+        const point = candidatePoints[index];
+        if (!Number.isFinite(point.x) || point.x < 0 || point.x > 500) {
+          return { error: "Horizontal positions must stay between 0 m and 500 m." };
+        }
+        if (!Number.isFinite(point.h) || point.h < 0 || point.h > 100) {
+          return { error: "Heights must stay between 0 m and 100 m." };
+        }
+        if (index > 0 && point.x <= candidatePoints[index - 1].x) {
+          return { error: "Control points must remain in left-to-right order." };
+        }
+      }
+
+      const raw = [];
+      const knotDistances = [];
+      let distance = 0;
+      let previousRaw = null;
+      for (let segment = 0; segment < candidatePoints.length - 1; segment += 1) {
+        const p0 = candidatePoints[Math.max(0, segment - 1)];
+        const p1 = candidatePoints[segment];
+        const p2 = candidatePoints[segment + 1];
+        const p3 = candidatePoints[Math.min(candidatePoints.length - 1, segment + 2)];
+        const chord = Math.hypot(p2.x - p1.x, p2.h - p1.h);
+        const steps = Math.max(80, Math.ceil(chord * 8));
+        for (let step = segment === 0 ? 0 : 1; step <= steps; step += 1) {
+          const value = splineAt(p0, p1, p2, p3, step / steps);
+          if (!value) {
+            return { error: "The track contains a point with undefined curvature." };
+          }
+          if (value.h < -1e-7 || value.h > 100 + 1e-7) {
+            return { error: "The smooth track must stay between 0 m and 100 m high." };
+          }
+          if (previousRaw) {
+            if (value.x <= previousRaw.x + 1e-8) {
+              return { error: "The smooth track must keep moving from left to right." };
+            }
+            distance += Math.hypot(value.x - previousRaw.x, value.h - previousRaw.h);
+          }
+          const entry = { ...value, s: distance };
+          raw.push(entry);
+          previousRaw = entry;
+          if (step === steps) {
+            knotDistances.push(distance);
+          }
+        }
+      }
+
+      if (raw.length < 2 || !Number.isFinite(distance) || distance <= 0) {
+        return { error: "The track must have a positive length." };
+      }
+      const targets = [];
+      const divisions = Math.ceil(distance / 0.25);
+      for (let index = 0; index <= divisions; index += 1) {
+        targets.push(distance * index / divisions);
+      }
+      targets.push(...knotDistances);
+      targets.sort((a, b) => a - b);
+      const uniqueTargets = targets.filter((target, index) => index === 0 || target - targets[index - 1] > 1e-7);
+      const samples = [];
+      let rawIndex = 0;
+      for (const target of uniqueTargets) {
+        while (rawIndex < raw.length - 2 && raw[rawIndex + 1].s < target) {
+          rawIndex += 1;
+        }
+        const a = raw[rawIndex];
+        const b = raw[Math.min(rawIndex + 1, raw.length - 1)];
+        const fraction = b.s === a.s ? 0 : (target - a.s) / (b.s - a.s);
+        const sample = interpolateSample(a, b, fraction);
+        sample.s = target;
+        samples.push(sample);
+      }
+
+      const startHeight = candidatePoints[0].h;
+      const failure = findFailure(samples, startHeight);
+      const endDistance = failure ? failure.s : distance;
+      const profile = samples
+        .filter(sample => sample.s < endDistance - 1e-7)
+        .map(sample => addRideValues({ ...sample }, startHeight));
+      if (failure) {
+        profile.push(addRideValues({ ...failure, startHeight }, startHeight));
+      } else if (profile.length === 0 || profile[profile.length - 1].s < distance - 1e-7) {
+        profile.push(addRideValues({ ...samples[samples.length - 1], startHeight }, startHeight));
+      }
+      if (profile.length === 0) {
+        profile.push(addRideValues({ ...samples[0], startHeight }, startHeight));
+      }
+
+      let time = 0;
+      let stallDistance = null;
+      profile[0].time = 0;
+      for (let index = 1; index < profile.length; index += 1) {
+        const a = profile[index - 1];
+        const b = profile[index];
+        const deltaS = b.s - a.s;
+        const speedSum = a.speed + b.speed;
+        let deltaTime;
+        if (speedSum > 1e-8) {
+          deltaTime = 2 * deltaS / speedSum;
+        } else {
+          const tangent = (a.theta + b.theta) / 2;
+          const downhillAcceleration = -GRAVITY * Math.sin(tangent);
+          if (downhillAcceleration <= 1e-5) {
+            stallDistance = a.s;
+            b.time = Infinity;
+            break;
+          }
+          deltaTime = Math.sqrt(2 * deltaS / downhillAcceleration);
+        }
+        time += deltaTime;
+        b.time = time;
+      }
+
+      return {
+        samples,
+        profile,
+        failure,
+        distance,
+        endDistance,
+        startHeight,
+        duration: time,
+        stallDistance
+      };
+    }
+
+    function axisMaximum(pointsList) {
+      return Math.min(500, Math.max(100, Math.ceil((pointsList[pointsList.length - 1].x + 20) / 20) * 20));
+    }
+
+    function mapX(x, xMax) {
+      return TRACK_AREA.left + (x / xMax) * (TRACK_AREA.right - TRACK_AREA.left);
+    }
+
+    function mapHeight(height) {
+      return TRACK_AREA.bottom - (height / 100) * (TRACK_AREA.bottom - TRACK_AREA.top);
+    }
+
+    function mapDistance(distance, maxDistance, left, right) {
+      return left + (distance / maxDistance) * (right - left);
+    }
+
+    function getSampleAtDistance(distance) {
+      const list = model.profile;
+      if (distance <= list[0].s) {
+        return list[0];
+      }
+      if (distance >= list[list.length - 1].s) {
+        return list[list.length - 1];
+      }
+      let low = 0;
+      let high = list.length - 1;
+      while (low + 1 < high) {
+        const middle = Math.floor((low + high) / 2);
+        if (list[middle].s <= distance) {
+          low = middle;
+        } else {
+          high = middle;
+        }
+      }
+      const fraction = (distance - list[low].s) / (list[high].s - list[low].s);
+      const result = interpolateSample(list[low], list[high], fraction);
+      result.speed = list[low].speed + (list[high].speed - list[low].speed) * fraction;
+      result.load = list[low].load + (list[high].load - list[low].load) * fraction;
+      return result;
+    }
+
+    function getSampleAtTime(time) {
+      const list = model.profile;
+      if (time <= 0 || list.length === 1) {
+        return list[0];
+      }
+      let low = 0;
+      let high = list.length - 1;
+      while (low + 1 < high) {
+        const middle = Math.floor((low + high) / 2);
+        if (list[middle].time <= time) {
+          low = middle;
+        } else {
+          high = middle;
+        }
+      }
+      if (!Number.isFinite(list[high].time)) {
+        return list[low];
+      }
+      const span = list[high].time - list[low].time;
+      const fraction = span > 0 ? Math.max(0, Math.min(1, (time - list[low].time) / span)) : 0;
+      return interpolateRideSamples(list[low], list[high], fraction);
+    }
+
+    function interpolateRideSamples(a, b, fraction) {
+      const result = interpolateSample(a, b, fraction);
+      result.speed = a.speed + (b.speed - a.speed) * fraction;
+      result.load = a.load + (b.load - a.load) * fraction;
+      return result;
+    }
+
+    function svgText(x, y, text, anchor) {
+      return `<text class="axis-label" x="${x}" y="${y}" text-anchor="${anchor || "start"}">${text}</text>`;
+    }
+
+    function renderTrack() {
+      const xMax = axisMaximum(points);
+      const xTicks = Array.from({ length: 6 }, (_, index) => xMax * index / 5);
+      const yTicks = [0, 25, 50, 75, 100];
+      let drawing = '<g class="gridline">';
+      yTicks.forEach(value => {
+        const y = mapHeight(value);
+        drawing += `<path d="M${TRACK_AREA.left} ${y}H${TRACK_AREA.right}"></path>`;
+      });
+      xTicks.forEach(value => {
+        const x = mapX(value, xMax);
+        drawing += `<path d="M${x} ${TRACK_AREA.top}V${TRACK_AREA.bottom}"></path>`;
+      });
+      drawing += "</g><g>";
+      yTicks.forEach(value => {
+        drawing += svgText(61, mapHeight(value) + 4, String(value), "end");
+      });
+      xTicks.forEach(value => {
+        drawing += svgText(mapX(value, xMax), 348, String(Math.round(value)), "middle");
+      });
+      drawing += svgText((TRACK_AREA.left + TRACK_AREA.right) / 2, 378, "Horizontal distance (m)", "middle");
+      drawing += `<text class="axis-label" transform="translate(17 205) rotate(-90)" text-anchor="middle">Height (m)</text></g>`;
+
+      const path = model.samples.map((sample, index) =>
+        `${index === 0 ? "M" : "L"}${mapX(sample.x, xMax).toFixed(2)} ${mapHeight(sample.h).toFixed(2)}`
+      ).join(" ");
+      drawing += `<path class="track-path" d="${path}"></path>`;
+      points.forEach((point, index) => {
+        const x = mapX(point.x, xMax);
+        const y = mapHeight(point.h);
+        drawing += `<circle class="control-point" data-index="${index}" cx="${x}" cy="${y}" r="7" tabindex="0" role="button" aria-label="Control point ${index + 1}, ${point.x.toFixed(1)} meters horizontal, ${point.h.toFixed(1)} meters high"></circle>`;
+      });
+
+      if (model.failure) {
+        const failed = model.failure;
+        const x = mapX(failed.x, xMax);
+        const y = mapHeight(failed.h);
+        drawing += `<g aria-label="Failure point"><circle class="failure-mark" cx="${x}" cy="${y}" r="10"></circle><path d="M${x - 4} ${y - 4}L${x + 4} ${y + 4}M${x + 4} ${y - 4}L${x - 4} ${y + 4}" stroke="white" stroke-width="2"></path></g>`;
+      }
+      const car = getSampleAtDistance(currentDistance);
+      const carX = mapX(car.x, xMax);
+      const carY = mapHeight(car.h);
+      const angle = -car.theta * 180 / Math.PI;
+      drawing += `<g transform="translate(${carX} ${carY}) rotate(${angle})" aria-label="Car"><rect class="car-body" x="-13" y="-7" width="26" height="14" rx="5"></rect><circle cx="-7" cy="7" r="2" fill="#d6f36a"></circle><circle cx="7" cy="7" r="2" fill="#d6f36a"></circle></g>`;
+      trackDrawing.innerHTML = drawing;
+    }
+
+    function renderChart(svg, key, minY, maxY, ticks, lineClass, limitValues) {
+      const left = 55;
+      const right = 480;
+      const top = 22;
+      const bottom = 145;
+      const maxDistance = Math.max(model.distance, 1);
+      const mapY = value => bottom - ((value - minY) / (maxY - minY)) * (bottom - top);
+      let chart = "";
+      ticks.forEach(value => {
+        const y = mapY(value);
+        chart += `<line class="chart-grid" x1="${left}" y1="${y}" x2="${right}" y2="${y}"></line>`;
+        chart += `<text class="chart-axis" x="${left - 8}" y="${y + 3}" text-anchor="end">${value}</text>`;
+      });
+      chart += `<line class="chart-grid" x1="${left}" y1="${top}" x2="${left}" y2="${bottom}"></line>`;
+      chart += `<line class="chart-grid" x1="${left}" y1="${bottom}" x2="${right}" y2="${bottom}"></line>`;
+      [0, 0.5, 1].forEach(fraction => {
+        const x = left + fraction * (right - left);
+        chart += `<text class="chart-axis" x="${x}" y="164" text-anchor="middle">${Math.round(maxDistance * fraction)}</text>`;
+      });
+      chart += `<text class="chart-axis" x="${(left + right) / 2}" y="183" text-anchor="middle">Distance along track (m)</text>`;
+      (limitValues || []).forEach(value => {
+        const y = mapY(value);
+        chart += `<line class="chart-limit" x1="${left}" y1="${y}" x2="${right}" y2="${y}"></line>`;
+      });
+      const visible = model.profile.filter(sample => Number.isFinite(sample[key]));
+      const line = visible.map((sample, index) => {
+        const value = key === "speed" ? sample.speed * METERS_PER_SECOND_TO_MPH : sample.load;
+        return `${index === 0 ? "M" : "L"}${mapDistance(sample.s, maxDistance, left, right).toFixed(2)} ${mapY(value).toFixed(2)}`;
+      }).join(" ");
+      chart += `<path class="${lineClass}" d="${line}"></path>`;
+      if (model.failure) {
+        const failX = mapDistance(model.failure.s, maxDistance, left, right);
+        chart += `<line class="chart-failure" x1="${failX}" y1="${top}" x2="${failX}" y2="${bottom}"></line>`;
+      }
+      const progressX = mapDistance(currentDistance, maxDistance, left, right);
+      chart += `<line class="progress-line" x1="${progressX}" y1="${top}" x2="${progressX}" y2="${bottom}"></line>`;
+      svg.innerHTML = chart;
+    }
+
+    function failureDescription(failure) {
+      if (!failure) {
+        return "";
+      }
+      if (failure.type === "rollback") {
+        return "Rollback: not enough energy to reach the next crest";
+      }
+      if (failure.type === "upper-g") {
+        return "Upper g-force limit exceeded";
+      }
+      return "Lower g-force limit exceeded";
+    }
+
+    function setStatus(message) {
+      statusLine.textContent = message;
+    }
+
+    function updateSummary() {
+      const failure = model.failure;
+      const labels = {
+        ready: ["Ready", failure ? failureDescription(failure) : "No failure detected"],
+        running: ["Riding", `${currentDistance.toFixed(1)} m along the track`],
+        "rolling-back": ["Rolling back", "Car returning down the track"],
+        paused: ["Paused", failure ? failureDescription(failure) : "Ride paused"],
+        complete: ["Complete", failure ? failureDescription(failure) : "No failure detected"],
+        failed: ["Failed", failureDescription(failure)],
+        stalled: ["Stopped", "Track has no downhill gravity at the car"]
+      };
+      const label = labels[rideState] || labels.ready;
+      trackStatus.textContent = label[0];
+      trackStatusCaption.textContent = label[1];
+      pauseButton.disabled = rideState !== "running" && rideState !== "rolling-back";
+      startButton.innerHTML = rideState === "running" || rideState === "rolling-back"
+        ? '<span class="play-icon" aria-hidden="true"></span>Ride in progress'
+        : rideState === "paused"
+          ? '<span class="play-icon" aria-hidden="true"></span>Resume ride'
+          : '<span class="play-icon" aria-hidden="true"></span>Start ride';
+    }
+
+    function updateReadouts() {
+      const sample = getSampleAtDistance(currentDistance);
+      speedReadout.textContent = (sample.speed * METERS_PER_SECOND_TO_MPH).toFixed(2);
+      gReadout.textContent = sample.load.toFixed(2);
+      renderTrack();
+      const speedMaximum = Math.max(60, Math.ceil(Math.max(...model.profile.map(item => item.speed)) * METERS_PER_SECOND_TO_MPH / 10) * 10);
+      const speedTicks = Array.from({ length: 4 }, (_, index) => Math.round(speedMaximum * index / 3));
+      renderChart(speedPlot, "speed", 0, speedMaximum, speedTicks, "chart-line", []);
+      renderChart(gPlot, "load", -1.5, 5, [-1, 0, 1, 2, 3, 4, 5], "chart-line-g", [-1, 4]);
+      updateSummary();
+    }
+
+    function stopAnimation() {
+      if (frameId) {
+        cancelAnimationFrame(frameId);
+        frameId = 0;
+      }
+      lastFrameTime = 0;
+    }
+
+    function tick(timestamp) {
+      if (rideState !== "running" && rideState !== "rolling-back") {
+        return;
+      }
+      let frameDelta = 0;
+      if (lastFrameTime) {
+        frameDelta = (timestamp - lastFrameTime) / 1000;
+      }
+      lastFrameTime = timestamp;
+
+      const profile = model.profile;
+      const finiteEnd = profile.findLast ? profile.findLast(sample => Number.isFinite(sample.time)) : [...profile].reverse().find(sample => Number.isFinite(sample.time));
+      const motionEndTime = finiteEnd ? finiteEnd.time : 0;
+      if (rideState === "running") {
+        elapsedTime += frameDelta;
+        if (model.stallDistance !== null && elapsedTime >= motionEndTime) {
+          currentDistance = model.stallDistance;
+          rideState = "stalled";
+          stopAnimation();
+        } else if (elapsedTime >= model.duration) {
+          currentDistance = model.endDistance;
+          if (model.failure && model.failure.type === "rollback") {
+            elapsedTime = model.duration;
+            rideState = "rolling-back";
+            setStatus("Rollback · Car returning down the track");
+          } else {
+            rideState = model.failure ? "failed" : "complete";
+            stopAnimation();
+          }
+        } else {
+          const sample = getSampleAtTime(elapsedTime);
+          currentDistance = sample.s;
+        }
+      } else {
+        elapsedTime = Math.max(0, elapsedTime - frameDelta);
+        currentDistance = getSampleAtTime(elapsedTime).s;
+        if (elapsedTime <= 0) {
+          rideState = "failed";
+          currentDistance = 0;
+          stopAnimation();
+        }
+      }
+      updateReadouts();
+      if (rideState === "running" || rideState === "rolling-back") {
+        setStatus(rideState === "rolling-back"
+          ? `Rollback · ${currentDistance.toFixed(1)} m back toward the start`
+          : `Riding · ${currentDistance.toFixed(1)} m of ${model.endDistance.toFixed(1)} m`);
+        frameId = requestAnimationFrame(tick);
+      } else if (rideState === "failed") {
+        setStatus(model.failure && model.failure.type === "rollback"
+          ? "Rollback complete · Car returned to the starting hill"
+          : `Ride failed · ${failureDescription(model.failure)}`);
+      } else if (rideState === "complete") {
+        setStatus("Ride complete · No failure detected");
+      } else if (rideState === "stalled") {
+        setStatus("Ride stopped · No downhill gravity can start the car moving");
+      }
+    }
+
+    function startRide() {
+      if (rideState === "running" || rideState === "rolling-back") {
+        return;
+      }
+      if (rideState === "paused") {
+        rideState = pausedFrom;
+        lastFrameTime = 0;
+        updateSummary();
+        setStatus(rideState === "rolling-back" ? "Rollback resumed · Car returning down the track" : "Ride resumed");
+        frameId = requestAnimationFrame(tick);
+        return;
+      }
+      if (rideState === "complete" || rideState === "failed" || rideState === "stalled") {
+        currentDistance = 0;
+        elapsedTime = 0;
+      }
+      if (model.failure && model.failure.s <= 1e-7) {
+        currentDistance = model.failure.s;
+        rideState = "failed";
+        setStatus(`Ride failed · ${failureDescription(model.failure)}`);
+        updateReadouts();
+        return;
+      }
+      if (model.duration === 0 && model.stallDistance !== null) {
+        rideState = "stalled";
+        setStatus("Ride stopped · No downhill gravity can start the car moving");
+        updateReadouts();
+        return;
+      }
+      rideState = "running";
+      lastFrameTime = 0;
+      updateSummary();
+      setStatus("Ride started · Car rolling under gravity");
+      frameId = requestAnimationFrame(tick);
+    }
+
+    function pauseRide() {
+      if (rideState !== "running" && rideState !== "rolling-back") {
+        return;
+      }
+      pausedFrom = rideState;
+      stopAnimation();
+      rideState = "paused";
+      setStatus(`Ride paused · ${currentDistance.toFixed(1)} m along the track`);
+      updateReadouts();
+    }
+
+    function resetRide() {
+      stopAnimation();
+      currentDistance = 0;
+      elapsedTime = 0;
+      rideState = "ready";
+      pausedFrom = "running";
+      setStatus("Ready to ride · Drag a point to edit the track");
+      updateReadouts();
+    }
+
+    function refreshAfterEdit(candidate, nextModel) {
+      const wasActive = rideState === "running" || rideState === "rolling-back";
+      pausedFrom = rideState;
+      stopAnimation();
+      points = candidate;
+      model = nextModel;
+      currentDistance = Math.min(currentDistance, model.endDistance);
+      elapsedTime = 0;
+      rideState = wasActive ? "paused" : (rideState === "ready" ? "ready" : "paused");
+      setStatus(wasActive ? "Ride paused · Track updated" : "Track updated · Ride paused at current position");
+      updateReadouts();
+    }
+
+    function svgPointFromEvent(event) {
+      const point = trackSvg.createSVGPoint();
+      point.x = event.clientX;
+      point.y = event.clientY;
+      return point.matrixTransform(trackSvg.getScreenCTM().inverse());
+    }
+
+    function applyDrag(event) {
+      if (dragIndex < 0) {
+        return;
+      }
+      const svgPoint = svgPointFromEvent(event);
+      const xMax = axisMaximum(points);
+      const x = Math.max(0, Math.min(500, (svgPoint.x - TRACK_AREA.left) / (TRACK_AREA.right - TRACK_AREA.left) * xMax));
+      const h = Math.max(0, Math.min(100, (TRACK_AREA.bottom - svgPoint.y) / (TRACK_AREA.bottom - TRACK_AREA.top) * 100));
+      const candidate = points.map(point => ({ ...point }));
+      candidate[dragIndex] = { x: Math.round(x * 10) / 10, h: Math.round(h * 10) / 10 };
+      const result = calculateModel(candidate);
+      if (result.error) {
+        setStatus(`Edit rejected · ${result.error}`);
+        return;
+      }
+      refreshAfterEdit(candidate, result);
+    }
+
+    trackSvg.addEventListener("pointerdown", event => {
+      const handle = event.target.closest && event.target.closest(".control-point");
+      if (!handle) {
+        return;
+      }
+      dragIndex = Number(handle.getAttribute("data-index"));
+      trackSvg.setPointerCapture(event.pointerId);
+      event.preventDefault();
+    });
+    trackSvg.addEventListener("pointermove", event => {
+      if (dragIndex >= 0) {
+        applyDrag(event);
+      }
+    });
+    trackSvg.addEventListener("pointerup", () => { dragIndex = -1; });
+    trackSvg.addEventListener("pointercancel", () => { dragIndex = -1; });
+
+    startButton.addEventListener("click", startRide);
+    pauseButton.addEventListener("click", pauseRide);
+    resetButton.addEventListener("click", resetRide);
+
+    model = calculateModel(points);
+    if (model.error) {
+      throw new Error(`Default track is invalid: ${model.error}`);
+    }
+    updateReadouts();
+  </script>
 </body>
 </html>
