@@ -1310,6 +1310,40 @@
     });
     trackSvg.addEventListener("pointerup", () => { dragIndex = -1; });
     trackSvg.addEventListener("pointercancel", () => { dragIndex = -1; });
+    trackSvg.addEventListener("keydown", event => {
+      const handle = event.target.closest && event.target.closest(".control-point");
+      if (!handle) {
+        return;
+      }
+      const directions = {
+        ArrowLeft: { x: -1, h: 0 },
+        ArrowRight: { x: 1, h: 0 },
+        ArrowUp: { x: 0, h: 1 },
+        ArrowDown: { x: 0, h: -1 }
+      };
+      const direction = directions[event.key];
+      if (!direction) {
+        return;
+      }
+      event.preventDefault();
+      const index = Number(handle.getAttribute("data-index"));
+      const increment = event.shiftKey ? 10 : 1;
+      const candidate = points.map(point => ({ ...point }));
+      candidate[index] = {
+        x: candidate[index].x + direction.x * increment,
+        h: candidate[index].h + direction.h * increment
+      };
+      const result = calculateModel(candidate);
+      if (result.error) {
+        setStatus(`Edit rejected · ${result.error}`);
+        return;
+      }
+      refreshAfterEdit(candidate, result);
+      const updatedHandle = trackDrawing.querySelector(`.control-point[data-index="${index}"]`);
+      if (updatedHandle) {
+        updatedHandle.focus();
+      }
+    });
 
     startButton.addEventListener("click", startRide);
     pauseButton.addEventListener("click", pauseRide);
