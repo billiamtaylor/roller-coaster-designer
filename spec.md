@@ -1,37 +1,55 @@
-# Specification
+# Roller Coaster Designer — First Draft
 
-Complete these sections in order before building the app. Be specific enough that someone can implement and verify the app from this document.
+## Features
+
+The required app will let a user shape a coaster track, simulate a car, and inspect speed and vertical g-force. In addition to those must-haves, I propose:
+
+- **Design comparison:** save one track as a baseline and compare another track's ride and telemetry with it.
+- **Keyboard track editing:** select a control point and move it with arrow keys as an alternative to dragging.
+
+These features are planned for after the must-have ride and its validation work.
 
 ## 1. Purpose
 
-Describe what the app does, the problem it addresses, and who it is for.
+An interactive, single-page learning tool for students and coaster enthusiasts to design a 2D track and see how gravity affects a car's speed and rider g-force.
 
 ## 2. Inputs
 
-List every value the user enters. For each input, specify:
+- Track control points: drag the points on the track canvas to shape the path. The first point is the starting crest.
+- Ride controls: start, pause, and reset the animation.
+- Comparison controls: save the current design as the comparison baseline or clear the baseline.
+- Keyboard alternative: select a control point and use arrow keys to move it.
 
-- Name and meaning
-- Unit, if applicable
-- Allowed range or options
-- Default value
-- Control used to enter it (for example, number field, slider, or dropdown)
+The app uses standard gravity and starts with an example track. The revised spec will set exact ranges, defaults, and control behavior.
 
 ## 3. Calculations
 
-Document every equation, rule, threshold, lookup table, and data-processing step the app uses. Define every variable and its units. Describe how downloaded data is processed, if applicable.
+Assume no friction. Let \(g=9.81\ \mathrm{m/s^2}\), \(h_0\) be the starting height, and \(h\) the car's current height, both in meters:
+
+\[
+v=\sqrt{2g(h_0-h)}
+\]
+
+Convert speed from meters per second to miles per hour. Compute vertical g-force from the track's slope and signed curvature; at a horizontal valley with radius \(R\) in meters:
+
+\[
+n=1+\frac{v^2}{gR}
+\]
+
+The car rolls back if it cannot reach a crest. Mark a failure if vertical g-force exceeds \(4g\) or falls below \(-1g\).
 
 ## 4. Outputs
 
-Describe everything the app shows, including numbers and their units, tables, plots, and diagrams. Specify how outputs relate to the inputs and calculations.
+Show the editable track, animated car, speed in mph, vertical g-force, and plots of speed and g-force along the track. Mark the failure point and report whether the car rolled back or exceeded a g-force limit. Comparison outputs will be specified in the revision.
 
 ## 5. Look and feel
 
-Describe the page layout, what appears when the app first opens, and how the interface adapts and works on a phone.
+Use one responsive page with the track editor and ride controls above the live readouts and plots. Open with an example track ready to simulate. Keep controls touch-friendly on phones.
 
 ## 6. Validation
 
-Provide at least one hand-worked case with exact input values, the calculation steps, and the expected outputs (including units). The case should be specific enough to verify the app's results.
+With no friction, compare the app's bottom-of-drop speed to \(v=\sqrt{2g(h_0-h)}\). At a valley, compare its vertical g-force to \(n=1+v^2/(gR)\). Exact test inputs and expected values will be added in the revised spec.
 
 ## 7. Out of scope
 
-List features, use cases, data sources, or behaviors the app will not support.
+The initial simulation will not model friction, air drag, lift hills, loops as specialized track elements, or real-world structural design. It is an educational approximation, not a safety certification.
