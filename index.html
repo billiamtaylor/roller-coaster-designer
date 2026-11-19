@@ -238,6 +238,7 @@
     .failure-mark { fill: var(--red); stroke: white; stroke-width: 2; }
     .chart-limit { stroke: var(--red); stroke-dasharray: 5 4; stroke-width: 1.5; }
     .chart-failure { stroke: var(--red); stroke-dasharray: 3 3; stroke-width: 2; }
+    .baseline-chart-failure { stroke: #8a63d2; stroke-dasharray: 2 3; stroke-width: 2; }
     .progress-line { stroke: var(--navy); stroke-dasharray: 2 3; stroke-width: 1.5; }
 
     .editor-toolbar {
@@ -377,6 +378,21 @@
     .chart-axis { fill: #8390a0; font-size: 10px; }
     .chart-line { fill: none; stroke: var(--blue); stroke-width: 2.5; }
     .chart-line-g { fill: none; stroke: #e6a739; stroke-width: 2.5; }
+    .baseline-track {
+      fill: none;
+      stroke: #8a63d2;
+      stroke-dasharray: 8 6;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-width: 4;
+    }
+    .baseline-failure-mark { fill: #8a63d2; stroke: white; stroke-width: 2; }
+    .chart-baseline {
+      fill: none;
+      stroke: #8a63d2;
+      stroke-dasharray: 6 4;
+      stroke-width: 2.5;
+    }
 
     .feature-row {
       margin-top: 14px;
@@ -393,6 +409,42 @@
     }
 
     .feature-row strong { color: #3a4b60; }
+
+    .comparison-content { padding: 16px 19px 19px; }
+    .comparison-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 14px;
+    }
+    .comparison-status { color: var(--muted); font-size: 12px; }
+    .comparison-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      margin-bottom: 12px;
+      color: #5f6e81;
+      font-size: 11px;
+    }
+    .legend-item { display: inline-flex; align-items: center; gap: 7px; }
+    .legend-swatch { width: 18px; height: 3px; border-radius: 2px; background: var(--blue); }
+    .legend-swatch.baseline { background: #8a63d2; }
+    .comparison-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      font-variant-numeric: tabular-nums;
+    }
+    .comparison-table th, .comparison-table td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--line);
+      text-align: right;
+      white-space: nowrap;
+    }
+    .comparison-table th:first-child, .comparison-table td:first-child { text-align: left; }
+    .comparison-table thead th { color: var(--muted); font-size: 11px; }
+    .comparison-table tbody th { font-weight: 750; }
 
     @media (max-width: 720px) {
       .topbar-inner, main { width: min(100% - 24px, 560px); }
@@ -500,9 +552,36 @@
       </article>
     </section>
 
-    <section class="feature-row" aria-label="Planned features">
-      <span><strong>Coming next:</strong> compare two designs and edit control points with a keyboard.</span>
-      <span>Idealized model · Not for real-world safety certification</span>
+    <section class="card" aria-labelledby="comparison-heading">
+      <div class="card-heading">
+        <div>
+          <h2 id="comparison-heading">Compare designs</h2>
+          <p>Save a baseline, reshape the track, and compare the ride metrics</p>
+        </div>
+      </div>
+      <div class="comparison-content">
+        <div class="comparison-toolbar">
+          <div class="button-row">
+            <button id="saveBaselineButton" class="button" type="button">Save current as baseline</button>
+            <button id="clearBaselineButton" class="button" type="button" disabled>Clear baseline</button>
+          </div>
+          <div id="comparisonStatus" class="comparison-status" role="status">No baseline saved. The comparison stays in this page only.</div>
+        </div>
+        <div id="comparisonResults" hidden>
+          <div class="comparison-legend" aria-label="Plot legend">
+            <span class="legend-item"><span class="legend-swatch"></span>Current design</span>
+            <span class="legend-item"><span class="legend-swatch baseline"></span>Saved baseline</span>
+          </div>
+          <div style="overflow-x:auto">
+            <table class="comparison-table">
+              <thead>
+                <tr><th scope="col">Design</th><th scope="col">Maximum speed (mph)</th><th scope="col">Minimum vertical g</th><th scope="col">Maximum vertical g</th></tr>
+              </thead>
+              <tbody id="comparisonRows"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
     </section>
   </main>
   <script>
@@ -530,6 +609,11 @@
     const statusLine = document.getElementById("statusLine");
     const trackStatus = document.getElementById("trackStatus");
     const trackStatusCaption = document.getElementById("trackStatusCaption");
+    const saveBaselineButton = document.getElementById("saveBaselineButton");
+    const clearBaselineButton = document.getElementById("clearBaselineButton");
+    const comparisonStatus = document.getElementById("comparisonStatus");
+    const comparisonResults = document.getElementById("comparisonResults");
+    const comparisonRows = document.getElementById("comparisonRows");
 
     let points = DEFAULT_POINTS.map(point => ({ ...point }));
     let model;
@@ -540,6 +624,7 @@
     let lastFrameTime = 0;
     let elapsedTime = 0;
     let dragIndex = -1;
+    let baseline = null;
 
     function splineAt(p0, p1, p2, p3, t) {
       const t2 = t * t;
@@ -764,7 +849,8 @@
     }
 
     function axisMaximum(pointsList) {
-      return Math.min(500, Math.max(100, Math.ceil((pointsList[pointsList.length - 1].x + 20) / 20) * 20));
+      const maximumX = Math.max(...pointsList.map(point => point.x));
+      return Math.min(500, Math.max(100, Math.ceil((maximumX + 20) / 20) * 20));
     }
 
     function mapX(x, xMax) {
@@ -839,7 +925,8 @@
     }
 
     function renderTrack() {
-      const xMax = axisMaximum(points);
+      const axisPoints = baseline ? points.concat(baseline.points) : points;
+      const xMax = axisMaximum(axisPoints);
       const xTicks = Array.from({ length: 6 }, (_, index) => xMax * index / 5);
       const yTicks = [0, 25, 50, 75, 100];
       let drawing = '<g class="gridline">';
@@ -864,6 +951,17 @@
       const path = model.samples.map((sample, index) =>
         `${index === 0 ? "M" : "L"}${mapX(sample.x, xMax).toFixed(2)} ${mapHeight(sample.h).toFixed(2)}`
       ).join(" ");
+      if (baseline) {
+        const baselinePath = baseline.model.samples.map((sample, index) =>
+          `${index === 0 ? "M" : "L"}${mapX(sample.x, xMax).toFixed(2)} ${mapHeight(sample.h).toFixed(2)}`
+        ).join(" ");
+        drawing += `<path class="baseline-track" d="${baselinePath}"></path>`;
+        if (baseline.model.failure) {
+          const x = mapX(baseline.model.failure.x, xMax);
+          const y = mapHeight(baseline.model.failure.h);
+          drawing += `<circle class="baseline-failure-mark" cx="${x}" cy="${y}" r="8" aria-label="Baseline failure point"></circle>`;
+        }
+      }
       drawing += `<path class="track-path" d="${path}"></path>`;
       points.forEach((point, index) => {
         const x = mapX(point.x, xMax);
@@ -890,7 +988,7 @@
       const right = 480;
       const top = 22;
       const bottom = 145;
-      const maxDistance = Math.max(model.distance, 1);
+      const maxDistance = Math.max(model.distance, baseline ? baseline.model.distance : 0, 1);
       const mapY = value => bottom - ((value - minY) / (maxY - minY)) * (bottom - top);
       let chart = "";
       ticks.forEach(value => {
@@ -909,6 +1007,17 @@
         const y = mapY(value);
         chart += `<line class="chart-limit" x1="${left}" y1="${y}" x2="${right}" y2="${y}"></line>`;
       });
+      if (baseline) {
+        const baselineLine = baseline.model.profile.filter(sample => Number.isFinite(sample[key])).map((sample, index) => {
+          const value = key === "speed" ? sample.speed * METERS_PER_SECOND_TO_MPH : sample.load;
+          return `${index === 0 ? "M" : "L"}${mapDistance(sample.s, maxDistance, left, right).toFixed(2)} ${mapY(value).toFixed(2)}`;
+        }).join(" ");
+        chart += `<path class="chart-baseline" d="${baselineLine}"></path>`;
+        if (baseline.model.failure) {
+          const failureX = mapDistance(baseline.model.failure.s, maxDistance, left, right);
+          chart += `<line class="baseline-chart-failure" x1="${failureX}" y1="${top}" x2="${failureX}" y2="${bottom}"></line>`;
+        }
+      }
       const visible = model.profile.filter(sample => Number.isFinite(sample[key]));
       const line = visible.map((sample, index) => {
         const value = key === "speed" ? sample.speed * METERS_PER_SECOND_TO_MPH : sample.load;
@@ -968,11 +1077,59 @@
       speedReadout.textContent = (sample.speed * METERS_PER_SECOND_TO_MPH).toFixed(2);
       gReadout.textContent = sample.load.toFixed(2);
       renderTrack();
-      const speedMaximum = Math.max(60, Math.ceil(Math.max(...model.profile.map(item => item.speed)) * METERS_PER_SECOND_TO_MPH / 10) * 10);
+      const speedValues = model.profile.map(item => item.speed);
+      if (baseline) {
+        speedValues.push(...baseline.model.profile.map(item => item.speed));
+      }
+      const speedMaximum = Math.max(60, Math.ceil(Math.max(...speedValues) * METERS_PER_SECOND_TO_MPH / 10) * 10);
       const speedTicks = Array.from({ length: 4 }, (_, index) => Math.round(speedMaximum * index / 3));
       renderChart(speedPlot, "speed", 0, speedMaximum, speedTicks, "chart-line", []);
       renderChart(gPlot, "load", -1.5, 5, [-1, 0, 1, 2, 3, 4, 5], "chart-line-g", [-1, 4]);
+      renderComparison();
       updateSummary();
+    }
+
+    function modelMetrics(calculatedModel) {
+      const values = calculatedModel.profile;
+      return {
+        maximumSpeed: Math.max(...values.map(sample => sample.speed * METERS_PER_SECOND_TO_MPH)),
+        minimumLoad: Math.min(...values.map(sample => sample.load)),
+        maximumLoad: Math.max(...values.map(sample => sample.load))
+      };
+    }
+
+    function renderComparison() {
+      const hasBaseline = Boolean(baseline);
+      clearBaselineButton.disabled = !hasBaseline;
+      comparisonResults.hidden = !hasBaseline;
+      if (!hasBaseline) {
+        comparisonRows.innerHTML = "";
+        comparisonStatus.textContent = "No baseline saved. The comparison stays in this page only.";
+        return;
+      }
+      const baselineMetrics = modelMetrics(baseline.model);
+      const currentMetrics = modelMetrics(model);
+      const row = (label, metrics) => `<tr><th scope="row">${label}</th><td>${metrics.maximumSpeed.toFixed(2)}</td><td>${metrics.minimumLoad.toFixed(2)}</td><td>${metrics.maximumLoad.toFixed(2)}</td></tr>`;
+      comparisonRows.innerHTML = row("Saved baseline", baselineMetrics) + row("Current design", currentMetrics);
+      comparisonStatus.textContent = "Baseline saved. Reshape the track to compare the two designs.";
+    }
+
+    function saveBaseline() {
+      const savedPoints = points.map(point => ({ ...point }));
+      const savedModel = calculateModel(savedPoints);
+      if (savedModel.error) {
+        comparisonStatus.textContent = `Could not save baseline · ${savedModel.error}`;
+        return;
+      }
+      baseline = { points: savedPoints, model: savedModel };
+      setStatus("Comparison baseline saved");
+      updateReadouts();
+    }
+
+    function clearBaseline() {
+      baseline = null;
+      setStatus("Comparison baseline cleared");
+      updateReadouts();
     }
 
     function stopAnimation() {
@@ -1157,6 +1314,8 @@
     startButton.addEventListener("click", startRide);
     pauseButton.addEventListener("click", pauseRide);
     resetButton.addEventListener("click", resetRide);
+    saveBaselineButton.addEventListener("click", saveBaseline);
+    clearBaselineButton.addEventListener("click", clearBaseline);
 
     model = calculateModel(points);
     if (model.error) {
