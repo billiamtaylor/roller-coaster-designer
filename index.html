@@ -3,1359 +3,1253 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#101b2c">
-  <title>TrackLab — Roller Coaster Designer</title>
+  <meta name="theme-color" content="#f5f7fb">
+  <title>Roller Coaster Designer</title>
   <style>
     :root {
       color-scheme: light;
-      --ink: #132238;
-      --muted: #627186;
-      --line: #dce4ec;
-      --paper: #ffffff;
-      --canvas: #f5f8fb;
-      --navy: #101b2c;
-      --blue: #2874e8;
-      --blue-dark: #1d5fc4;
-      --lime: #d6f36a;
-      --red: #dc4b56;
-      --green: #2f946d;
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      font-synthesis: none;
-      text-rendering: optimizeLegibility;
+      --ink: #17243b;
+      --muted: #64728a;
+      --line: #e3e9f2;
+      --paper: #fff;
+      --blue: #4263eb;
+      --blue-soft: #edf1ff;
+      --teal: #0e9f91;
+      --orange: #e87835;
+      --red: #d94343;
+      --shadow: 0 12px 32px rgba(34, 52, 84, .07);
     }
 
     * { box-sizing: border-box; }
-
     body {
       margin: 0;
       min-width: 320px;
+      background: #f5f7fb;
       color: var(--ink);
-      background: #edf2f7;
+      font: 15px/1.5 Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
     }
 
     button { font: inherit; }
+    .shell { width: min(1200px, calc(100% - 40px)); margin: 0 auto; padding: 34px 0 48px; }
+    header { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; margin-bottom: 24px; }
+    .eyebrow { color: var(--blue); font-size: 11px; font-weight: 800; letter-spacing: .13em; text-transform: uppercase; }
+    h1 { margin: 4px 0 3px; font-size: clamp(26px, 4vw, 36px); letter-spacing: -.04em; line-height: 1.15; }
+    .intro { margin: 0; color: var(--muted); }
+    .model-tag { margin-top: 6px; border: 1px solid #dfe5f0; border-radius: 999px; padding: 7px 12px; color: #53617a; background: #fff; font-size: 12px; white-space: nowrap; }
+    .header-actions { display: flex; align-items: center; gap: 10px; }
+    .file-menu { position: relative; }
+    .file-menu summary { list-style: none; border: 1px solid #dbe2ef; border-radius: 999px; padding: 7px 14px; color: #34425c; background: #fff; font-size: 13px; font-weight: 700; cursor: pointer; }
+    .file-menu summary::-webkit-details-marker { display: none; }
+    .file-menu summary:focus-visible { outline: 3px solid #aebeff; outline-offset: 2px; }
+    .file-dropdown { position: absolute; z-index: 3; top: calc(100% + 7px); right: 0; width: 175px; padding: 5px; border: 1px solid var(--line); border-radius: 12px; background: #fff; box-shadow: var(--shadow); }
+    .file-dropdown button { display: block; width: 100%; border: 0; border-radius: 8px; padding: 9px 10px; color: var(--ink); background: transparent; text-align: left; cursor: pointer; }
+    .file-dropdown button:hover { background: #f3f5fb; }
 
-    .topbar {
-      color: white;
-      background: var(--navy);
-      border-bottom: 4px solid var(--lime);
-    }
-
-    .topbar-inner {
-      width: min(1240px, calc(100% - 40px));
-      min-height: 82px;
-      margin: auto;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 20px;
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 13px;
-    }
-
-    .brand-mark {
-      width: 42px;
-      height: 42px;
-      display: grid;
-      place-items: center;
-      border-radius: 12px;
-      color: var(--navy);
-      background: var(--lime);
-      font-size: 23px;
-      font-weight: 900;
-    }
-
-    .brand-name {
-      margin: 0;
-      font-size: 19px;
-      font-weight: 800;
-      letter-spacing: -.03em;
-    }
-
-    .brand-subtitle {
-      margin: 3px 0 0;
-      color: #b6c3d5;
-      font-size: 12px;
-      letter-spacing: .01em;
-    }
-
-    .physics-chip {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 12px;
-      border: 1px solid #354258;
-      border-radius: 999px;
-      color: #d8e2ee;
-      font-size: 12px;
-    }
-
-    .physics-chip::before {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: var(--lime);
-      content: "";
-    }
-
-    main {
-      width: min(1240px, calc(100% - 40px));
-      margin: 26px auto 48px;
-    }
-
-    .page-intro {
-      display: flex;
-      align-items: end;
-      justify-content: space-between;
-      gap: 20px;
-      margin-bottom: 18px;
-    }
-
-    .eyebrow {
-      margin: 0 0 7px;
-      color: var(--blue-dark);
-      font-size: 11px;
-      font-weight: 800;
-      letter-spacing: .12em;
-      text-transform: uppercase;
-    }
-
-    h1 {
-      margin: 0;
-      font-size: clamp(26px, 3vw, 36px);
-      letter-spacing: -.045em;
-      line-height: 1.08;
-    }
-
-    .intro-copy {
-      max-width: 540px;
-      margin: 8px 0 0;
-      color: var(--muted);
-      font-size: 14px;
-      line-height: 1.55;
-    }
-
-    .model-tag {
-      flex: 0 0 auto;
-      padding: 8px 11px;
-      border: 1px solid #c9d4df;
-      border-radius: 8px;
-      color: #526479;
-      background: #f8fafc;
-      font-size: 11px;
-      font-weight: 700;
-    }
-
-    .card {
-      overflow: hidden;
-      border: 1px solid var(--line);
-      border-radius: 15px;
-      background: var(--paper);
-      box-shadow: 0 5px 18px rgba(27, 45, 70, .045);
-    }
-
-    .editor-card { margin-bottom: 16px; }
-
-    .card-heading {
-      min-height: 58px;
-      padding: 14px 19px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 14px;
-      border-bottom: 1px solid var(--line);
-    }
-
-    .card-heading h2 {
-      margin: 0;
-      font-size: 15px;
-      font-weight: 800;
-      letter-spacing: -.015em;
-    }
-
-    .card-heading p {
-      margin: 4px 0 0;
-      color: var(--muted);
-      font-size: 12px;
-    }
-
-    .editor-hint {
-      color: var(--muted);
-      font-size: 12px;
-      text-align: right;
-    }
-
-    .track-wrap {
-      padding: 10px 12px 0;
-      background:
-        linear-gradient(rgba(216, 226, 236, .34) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(216, 226, 236, .34) 1px, transparent 1px),
-        var(--canvas);
-      background-size: 28px 28px;
-    }
-
-    .track-svg {
-      width: 100%;
-      height: auto;
-      display: block;
-      overflow: visible;
-    }
-
-    .axis-label {
-      fill: #748397;
-      font-size: 12px;
-    }
-
-    .gridline {
-      stroke: #dce5ee;
-      stroke-dasharray: 3 6;
-      stroke-width: 1;
-    }
-
-    .track-path {
-      fill: none;
-      stroke: var(--blue);
-      stroke-linecap: round;
-      stroke-linejoin: round;
-      stroke-width: 5;
-    }
-
-    .control-point {
-      fill: white;
-      stroke: var(--blue);
-      stroke-width: 3;
-      cursor: grab;
-      touch-action: none;
-    }
-
-    .control-point:focus { stroke: #0f3f91; stroke-width: 5; outline: none; }
-    .control-point:active { cursor: grabbing; }
-    .car-body { fill: var(--navy); stroke: white; stroke-width: 2; }
-    .failure-mark { fill: var(--red); stroke: white; stroke-width: 2; }
-    .chart-limit { stroke: var(--red); stroke-dasharray: 5 4; stroke-width: 1.5; }
-    .chart-failure { stroke: var(--red); stroke-dasharray: 3 3; stroke-width: 2; }
-    .baseline-chart-failure { stroke: #8a63d2; stroke-dasharray: 2 3; stroke-width: 2; }
-    .progress-line { stroke: var(--navy); stroke-dasharray: 2 3; stroke-width: 1.5; }
-
-    .editor-toolbar {
-      min-height: 76px;
-      padding: 13px 18px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      border-top: 1px solid var(--line);
-    }
-
-    .button-row { display: flex; flex-wrap: wrap; gap: 9px; }
-
-    .button {
-      min-height: 42px;
-      padding: 0 17px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      border: 1px solid #cbd6e1;
-      border-radius: 9px;
-      color: var(--ink);
-      background: white;
-      cursor: pointer;
-      font-size: 13px;
-      font-weight: 750;
-      transition: background .15s ease, transform .15s ease, border-color .15s ease;
-    }
-
-    .button:hover { background: #f5f8fb; border-color: #9fafbf; }
-    .button:active { transform: translateY(1px); }
-    .button:focus-visible { outline: 3px solid #94b9fa; outline-offset: 2px; }
-
-    .button-primary {
-      border-color: var(--blue);
-      color: white;
-      background: var(--blue);
-    }
-
-    .button-primary:hover { border-color: var(--blue-dark); background: var(--blue-dark); }
-    .button:disabled { opacity: .48; cursor: not-allowed; }
-
-    .play-icon {
-      width: 0;
-      height: 0;
-      border-top: 6px solid transparent;
-      border-bottom: 6px solid transparent;
-      border-left: 9px solid currentColor;
-    }
-
-    .reset-icon {
-      width: 12px;
-      height: 12px;
-      border: 2px solid currentColor;
-      border-right-color: transparent;
-      border-radius: 50%;
-    }
-
-    .status-line {
-      min-height: 20px;
-      color: var(--muted);
-      font-size: 12px;
-      text-align: right;
-    }
-
-    .metrics-grid {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 14px;
-      margin-bottom: 16px;
-    }
-
-    .metric {
-      min-height: 116px;
-      padding: 17px 19px;
-      position: relative;
-    }
-
-    .metric::after {
-      width: 3px;
-      position: absolute;
-      inset: 17px auto 17px 0;
-      border-radius: 0 4px 4px 0;
-      background: var(--blue);
-      content: "";
-    }
-
-    .metric:nth-child(2)::after { background: #e6a739; }
-    .metric:nth-child(3)::after { background: var(--green); }
-
-    .metric-label {
-      color: var(--muted);
-      font-size: 12px;
-      font-weight: 700;
-    }
-
-    .metric-value {
-      margin-top: 9px;
-      font-size: 31px;
-      font-weight: 850;
-      letter-spacing: -.045em;
-      font-variant-numeric: tabular-nums;
-    }
-
-    .metric-unit {
-      margin-left: 5px;
-      color: #68788c;
-      font-size: 14px;
-      font-weight: 650;
-      letter-spacing: 0;
-    }
-
-    .metric-caption {
-      margin-top: 4px;
-      color: #8391a2;
-      font-size: 11px;
-    }
-
-    .charts-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 14px;
-    }
-
-    .chart-card { min-width: 0; }
-
-    .chart {
-      width: 100%;
-      height: auto;
-      display: block;
-      padding: 0 8px 8px;
-    }
-
-    .chart-grid { stroke: #e5ebf1; stroke-width: 1; }
-    .chart-axis { fill: #8390a0; font-size: 10px; }
-    .chart-line { fill: none; stroke: var(--blue); stroke-width: 2.5; }
-    .chart-line-g { fill: none; stroke: #e6a739; stroke-width: 2.5; }
-    .baseline-track {
-      fill: none;
-      stroke: #8a63d2;
-      stroke-dasharray: 8 6;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-      stroke-width: 4;
-    }
-    .baseline-failure-mark { fill: #8a63d2; stroke: white; stroke-width: 2; }
-    .chart-baseline {
-      fill: none;
-      stroke: #8a63d2;
-      stroke-dasharray: 6 4;
-      stroke-width: 2.5;
-    }
-
-    .feature-row {
-      margin-top: 14px;
-      padding: 12px 16px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      border: 1px dashed #cbd6e1;
-      border-radius: 12px;
-      color: #627186;
-      background: rgba(255,255,255,.55);
-      font-size: 12px;
-    }
-
-    .feature-row strong { color: #3a4b60; }
-
-    .comparison-content { padding: 16px 19px 19px; }
-    .comparison-toolbar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      margin-bottom: 14px;
-    }
-    .comparison-status { color: var(--muted); font-size: 12px; }
-    .comparison-legend {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 14px;
-      margin-bottom: 12px;
-      color: #5f6e81;
-      font-size: 11px;
-    }
+    .layout { display: grid; grid-template-columns: minmax(0, 1.75fr) minmax(280px, .85fr); gap: 18px; align-items: stretch; }
+    .card { min-width: 0; overflow: hidden; border: 1px solid var(--line); border-radius: 16px; background: var(--paper); box-shadow: var(--shadow); }
+    .card-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 18px 20px 14px; }
+    .card-title { margin: 0; font-size: 15px; font-weight: 750; letter-spacing: -.01em; }
+    .card-subtitle { margin: 3px 0 0; color: var(--muted); font-size: 12px; }
+    .canvas-wrap { position: relative; width: 100%; }
+    canvas { display: block; width: 100%; }
+    #trackCanvas { height: 390px; touch-action: none; cursor: crosshair; }
+    #plotCanvas { height: 236px; }
+    .track-legend { display: flex; flex-wrap: wrap; gap: 16px; padding: 0 20px 15px; color: var(--muted); font-size: 12px; }
     .legend-item { display: inline-flex; align-items: center; gap: 7px; }
-    .legend-swatch { width: 18px; height: 3px; border-radius: 2px; background: var(--blue); }
-    .legend-swatch.baseline { background: #8a63d2; }
-    .comparison-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 12px;
-      font-variant-numeric: tabular-nums;
-    }
-    .comparison-table th, .comparison-table td {
-      padding: 10px 12px;
-      border-bottom: 1px solid var(--line);
-      text-align: right;
-      white-space: nowrap;
-    }
-    .comparison-table th:first-child, .comparison-table td:first-child { text-align: left; }
-    .comparison-table thead th { color: var(--muted); font-size: 11px; }
-    .comparison-table tbody th { font-weight: 750; }
+    .legend-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--blue); }
+    .legend-dot.orange { background: var(--orange); }
+    .legend-line { width: 16px; border-top: 2px solid var(--teal); }
 
-    @media (max-width: 720px) {
-      .topbar-inner, main { width: min(100% - 24px, 560px); }
-      .topbar-inner { min-height: 72px; }
-      main { margin-top: 20px; }
-      .page-intro { align-items: start; flex-direction: column; }
-      .model-tag { align-self: flex-start; }
-      .editor-hint { display: none; }
-      .editor-toolbar { align-items: flex-start; flex-direction: column; }
-      .status-line { text-align: left; }
-      .metrics-grid { gap: 8px; }
-      .metric { min-height: 103px; padding: 14px 12px; }
-      .metric-value { font-size: clamp(22px, 7vw, 29px); }
-      .metric-unit { margin-left: 2px; font-size: 12px; }
-      .charts-grid { grid-template-columns: 1fr; }
-      .feature-row { align-items: flex-start; flex-direction: column; }
-    }
+    .side { display: flex; flex-direction: column; gap: 18px; }
+    .controls { padding: 18px 20px; }
+    .control-buttons { display: flex; gap: 9px; margin-top: 16px; }
+    .button { min-height: 42px; border: 1px solid #dbe2ef; border-radius: 10px; padding: 0 15px; color: #34425c; background: #fff; font-weight: 700; cursor: pointer; transition: background .15s, border-color .15s, transform .15s; }
+    .button:hover { border-color: #b7c4e0; background: #f9faff; }
+    .button:active { transform: translateY(1px); }
+    .button.primary { border-color: var(--blue); color: #fff; background: var(--blue); }
+    .button.primary:hover { border-color: #3453d3; background: #3453d3; }
+    .button:focus-visible { outline: 3px solid #aebeff; outline-offset: 2px; }
+    .button:disabled { color: #a3adbd; background: #f5f7fa; cursor: not-allowed; }
+    .help { margin: 12px 0 0; color: var(--muted); font-size: 12px; }
+    .track-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 9px; }
+    .track-actions .button { min-height: 36px; padding: 0 11px; font-size: 12px; }
+    .export-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 9px; }
+    .export-actions .button { min-height: 36px; padding: 0 11px; font-size: 12px; }
+    .save-status { margin: 10px 0 0; color: var(--muted); font-size: 11px; }
+    .save-status.error { color: #a33434; }
+    .action-status { margin: 8px 0 0; color: var(--muted); font-size: 11px; }
+    .action-status.error { color: #a33434; }
+    .status { display: none; margin-top: 14px; border-radius: 10px; padding: 10px 12px; color: #8d2929; background: #fff0ef; font-size: 12px; font-weight: 650; }
+    .status.visible { display: block; }
+    .status.safe { color: #176f56; background: #e9f8f2; }
 
-    @media (max-width: 400px) {
-      .topbar-inner, main { width: calc(100% - 20px); }
-      .physics-chip { padding: 7px 9px; font-size: 10px; }
-      .metrics-grid { grid-template-columns: 1fr 1fr; }
-      .metric:last-child { grid-column: 1 / -1; }
-      .button { padding: 0 13px; }
+    .readouts { padding: 18px 20px 20px; }
+    .readout-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+    .metric { min-width: 0; border: 1px solid #e8edf5; border-radius: 12px; padding: 12px; background: #fbfcfe; }
+    .metric-label { color: var(--muted); font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+    .metric-value { margin-top: 2px; font-size: 25px; font-weight: 780; letter-spacing: -.04em; font-variant-numeric: tabular-nums; }
+    .metric-unit { margin-left: 3px; color: var(--muted); font-size: 12px; font-weight: 600; letter-spacing: 0; }
+    .safe-note { display: flex; gap: 8px; align-items: flex-start; margin: 14px 0 0; color: var(--muted); font-size: 11px; }
+    .safe-note span:first-child { color: var(--teal); font-weight: 900; }
+
+    .plot-card { margin-top: 18px; }
+    .plot-legend { display: flex; gap: 15px; align-items: center; color: var(--muted); font-size: 11px; }
+    .plot-legend i { display: inline-block; width: 13px; margin-right: 5px; border-top: 2px solid var(--blue); vertical-align: middle; }
+    .plot-legend .g-line { border-color: var(--orange); }
+    .footer-note { margin: 12px 2px 0; color: #77839a; font-size: 11px; }
+    @media (max-width: 820px) {
+      .shell { width: min(720px, calc(100% - 28px)); padding-top: 24px; }
+      .layout { grid-template-columns: 1fr; }
+      .side { display: grid; grid-template-columns: 1fr 1fr; align-items: stretch; }
+      #trackCanvas { height: 350px; }
+      .plot-card { margin-top: 16px; }
+    }
+    @media (max-width: 560px) {
+      .shell { width: calc(100% - 22px); padding-top: 20px; }
+      header { display: block; margin-bottom: 18px; }
+      .header-actions { justify-content: space-between; margin-top: 10px; }
+      .model-tag { margin-top: 0; white-space: normal; }
+      .card-head { padding: 15px 15px 12px; }
+      .controls, .readouts { padding: 15px; }
+      .side { grid-template-columns: 1fr; gap: 12px; }
+      #trackCanvas { height: 295px; }
+      #plotCanvas { height: 215px; }
+      .track-legend { padding: 0 15px 14px; gap: 11px; }
+      .control-buttons .button { flex: 1; padding: 0 10px; }
+      .plot-legend { gap: 9px; }
     }
   </style>
 </head>
 <body>
-  <header class="topbar">
-    <div class="topbar-inner">
-      <div class="brand">
-        <div class="brand-mark" aria-hidden="true">T</div>
-        <div>
-          <p class="brand-name">TrackLab</p>
-          <p class="brand-subtitle">A gravity-powered coaster design studio</p>
-        </div>
-      </div>
-      <span class="physics-chip">Ideal physics model</span>
-    </div>
-  </header>
-
-  <main>
-    <section class="page-intro" aria-labelledby="page-title">
+  <main class="shell">
+    <header>
       <div>
-        <p class="eyebrow">Design · Simulate · Learn</p>
-        <h1 id="page-title">Roller Coaster Designer</h1>
-        <p class="intro-copy">Shape a track, then see how height and curvature change your car's speed and the forces riders feel.</p>
+        <div class="eyebrow">Physics playground</div>
+        <h1>Roller Coaster Designer</h1>
+        <p class="intro">Shape a track, then see how gravity affects the ride.</p>
       </div>
-      <span class="model-tag">No friction · g = 9.81 m/s²</span>
+      <div class="header-actions">
+        <details class="file-menu" id="fileMenu">
+          <summary>File</summary>
+          <div class="file-dropdown">
+            <button type="button" id="saveDesignButton">Save design...</button>
+            <button type="button" id="openDesignButton">Open design...</button>
+          </div>
+        </details>
+        <div class="model-tag">Frictionless model &middot; g = 9.81 m/s&sup2;</div>
+      </div>
+    </header>
+
+    <section class="layout" aria-label="Coaster simulator">
+      <article class="card">
+        <div class="card-head">
+          <div>
+            <h2 class="card-title">Track editor</h2>
+            <p class="card-subtitle">Drag points to reshape; Shift-click to add one</p>
+          </div>
+          <div class="card-subtitle">0&ndash;100 m &middot; 0&ndash;60 m</div>
+        </div>
+        <div class="canvas-wrap">
+          <canvas id="trackCanvas" aria-label="Interactive track editor. Drag control points to change the track, Shift-click to insert a point, and select an interior point to remove it."></canvas>
+        </div>
+        <div class="track-legend" aria-hidden="true">
+          <span class="legend-item"><i class="legend-dot"></i> Track point</span>
+          <span class="legend-item"><i class="legend-dot orange"></i> Car</span>
+          <span class="legend-item"><i class="legend-line"></i> Starting height</span>
+        </div>
+      </article>
+
+      <div class="side">
+        <section class="card controls" aria-labelledby="controlsTitle">
+          <h2 class="card-title" id="controlsTitle">Ride controls</h2>
+          <div class="control-buttons">
+            <button class="button primary" id="playButton" type="button">Play ride</button>
+            <button class="button" id="restartButton" type="button">Restart</button>
+          </div>
+          <div class="track-actions">
+            <button class="button" id="undoButton" type="button" disabled title="Undo (Ctrl/Cmd+Z)">Undo</button>
+            <button class="button" id="redoButton" type="button" disabled title="Redo (Ctrl/Cmd+Y or Ctrl/Cmd+Shift+Z)">Redo</button>
+            <button class="button" id="removePointButton" type="button" disabled title="Remove selected interior point (Delete)">Remove point</button>
+            <button class="button" id="resetTrackButton" type="button">Reset track</button>
+          </div>
+          <div class="export-actions">
+            <button class="button" id="exportCsvButton" type="button">Export CSV</button>
+            <button class="button" id="exportPdfButton" type="button">Ride report PDF</button>
+          </div>
+          <p class="help">The car starts from rest at the first crest. Shift-click to add a point; select an interior point and press Delete to remove it. Undo: Ctrl/Cmd+Z; redo: Ctrl/Cmd+Y or Ctrl/Cmd+Shift+Z.</p>
+          <p class="save-status" id="saveStatus" role="status" aria-live="polite"></p>
+          <p class="action-status" id="actionStatus" role="status" aria-live="polite"></p>
+          <div class="status" id="status" role="status" aria-live="polite"></div>
+        </section>
+
+        <section class="card readouts" aria-labelledby="readoutsTitle">
+          <h2 class="card-title" id="readoutsTitle">Live ride data</h2>
+          <div class="readout-grid">
+            <div class="metric">
+              <div class="metric-label">Speed</div>
+              <div class="metric-value"><span id="speedValue">0.00</span><span class="metric-unit">mph</span></div>
+            </div>
+            <div class="metric">
+              <div class="metric-label">Vertical g-force</div>
+              <div class="metric-value"><span id="gValue">1.00</span><span class="metric-unit">g</span></div>
+            </div>
+            <div class="metric">
+              <div class="metric-label">Distance</div>
+              <div class="metric-value"><span id="distanceValue">0.0</span><span class="metric-unit">m</span></div>
+            </div>
+            <div class="metric">
+              <div class="metric-label">Height</div>
+              <div class="metric-value"><span id="heightValue">30.0</span><span class="metric-unit">m</span></div>
+            </div>
+          </div>
+          <p class="safe-note"><span>i</span><span>Educational model only. This does not certify a real ride as safe.</span></p>
+        </section>
+      </div>
     </section>
 
-    <section class="card editor-card" aria-labelledby="editor-heading">
-      <div class="card-heading">
+    <section class="card plot-card" aria-labelledby="plotTitle">
+      <div class="card-head">
         <div>
-          <h2 id="editor-heading">Track editor</h2>
-          <p>Drag the blue points to reshape your track</p>
+          <h2 class="card-title" id="plotTitle">Ride profile</h2>
+          <p class="card-subtitle">Speed and vertical g-force along the track</p>
         </div>
-        <span class="editor-hint">The car starts at the first hill</span>
+        <div class="plot-legend"><span><i></i>Speed (mph)</span><span><i class="g-line"></i>G-force</span></div>
       </div>
-      <div class="track-wrap">
-        <svg id="trackSvg" class="track-svg" viewBox="0 0 920 390" role="img" aria-label="Editable roller coaster track">
-          <g id="trackDrawing"></g>
-        </svg>
-      </div>
-      <div class="editor-toolbar">
-        <div class="button-row">
-          <button id="startButton" class="button button-primary" type="button"><span class="play-icon" aria-hidden="true"></span>Start ride</button>
-          <button id="pauseButton" class="button" type="button">Pause</button>
-          <button id="resetButton" class="button" type="button"><span class="reset-icon" aria-hidden="true"></span>Reset</button>
-        </div>
-        <div id="statusLine" class="status-line" role="status" aria-live="polite">Ready to ride · Drag a point to edit the track</div>
-      </div>
+      <canvas id="plotCanvas" aria-label="Plot of speed and vertical g-force versus track distance"></canvas>
     </section>
-
-    <section class="metrics-grid" aria-label="Live ride readouts">
-      <article class="card metric">
-        <div class="metric-label">Car speed</div>
-        <div class="metric-value"><span id="speedReadout">0.00</span><span class="metric-unit">mph</span></div>
-        <div class="metric-caption">At the car's current position</div>
-      </article>
-      <article class="card metric">
-        <div class="metric-label">Vertical rider force</div>
-        <div class="metric-value"><span id="gReadout">0.00</span><span class="metric-unit">g</span></div>
-        <div class="metric-caption">Comfort zone: −1 g to +4 g</div>
-      </article>
-      <article class="card metric">
-        <div class="metric-label">Track status</div>
-        <div id="trackStatus" class="metric-value">Ready</div>
-        <div id="trackStatusCaption" class="metric-caption">No failure detected</div>
-      </article>
-    </section>
-
-    <section class="charts-grid" aria-label="Ride plots">
-      <article class="card chart-card">
-        <div class="card-heading">
-          <div><h2>Speed along track</h2><p>Car speed · miles per hour</p></div>
-        </div>
-        <svg id="speedPlot" class="chart" viewBox="0 0 500 190" role="img" aria-label="Car speed in miles per hour by distance along the track"></svg>
-      </article>
-      <article class="card chart-card">
-        <div class="card-heading">
-          <div><h2>Vertical g-force along track</h2><p>Rider load · g</p></div>
-        </div>
-        <svg id="gPlot" class="chart" viewBox="0 0 500 190" role="img" aria-label="Vertical rider g-force by distance along the track"></svg>
-      </article>
-    </section>
-
-    <section class="card" aria-labelledby="comparison-heading">
-      <div class="card-heading">
-        <div>
-          <h2 id="comparison-heading">Compare designs</h2>
-          <p>Save a baseline, reshape the track, and compare the ride metrics</p>
-        </div>
-      </div>
-      <div class="comparison-content">
-        <div class="comparison-toolbar">
-          <div class="button-row">
-            <button id="saveBaselineButton" class="button" type="button">Save current as baseline</button>
-            <button id="clearBaselineButton" class="button" type="button" disabled>Clear baseline</button>
-          </div>
-          <div id="comparisonStatus" class="comparison-status" role="status">No baseline saved. The comparison stays in this page only.</div>
-        </div>
-        <div id="comparisonResults" hidden>
-          <div class="comparison-legend" aria-label="Plot legend">
-            <span class="legend-item"><span class="legend-swatch"></span>Current design</span>
-            <span class="legend-item"><span class="legend-swatch baseline"></span>Saved baseline</span>
-          </div>
-          <div style="overflow-x:auto">
-            <table class="comparison-table">
-              <thead>
-                <tr><th scope="col">Design</th><th scope="col">Maximum speed (mph)</th><th scope="col">Minimum vertical g</th><th scope="col">Maximum vertical g</th></tr>
-              </thead>
-              <tbody id="comparisonRows"></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    </section>
+    <p class="footer-note">Values assume conservation of energy with no friction or air drag. Excessive forces are marked at the first limit violation.</p>
   </main>
+  <input id="openDesignInput" type="file" accept=".json,application/json" hidden>
+
   <script>
-    "use strict";
+    (() => {
+      "use strict";
 
-    const GRAVITY = 9.81;
-    const METERS_PER_SECOND_TO_MPH = 2.2369362920544;
-    const SVG_NS = "http://www.w3.org/2000/svg";
-    const TRACK_AREA = { left: 75, right: 890, top: 40, bottom: 320 };
-    const DEFAULT_POINTS = [
-      { x: 0, h: 30 }, { x: 10, h: 20 }, { x: 20, h: 10 },
-      { x: 30, h: 2.5 }, { x: 40, h: 0 }, { x: 50, h: 2.5 },
-      { x: 60, h: 10 }, { x: 70, h: 22.5 }, { x: 80, h: 27 }
-    ];
+      const gravity = 9.81;
+      const mphPerMps = 2.2369362921;
+      const storageKey = "roller-coaster-designer.track.v1";
+      const pointDefaults = [
+        { x: 0, y: 30 }, { x: 16.7, y: 26 }, { x: 33.3, y: 23 },
+        { x: 50, y: 26 }, { x: 66.7, y: 23 }, { x: 83.3, y: 26 },
+        { x: 100, y: 23 }
+      ];
+      const trackCanvas = document.getElementById("trackCanvas");
+      const plotCanvas = document.getElementById("plotCanvas");
+      const trackCtx = trackCanvas.getContext("2d");
+      const plotCtx = plotCanvas.getContext("2d");
+      const fileMenu = document.getElementById("fileMenu");
+      const saveDesignButton = document.getElementById("saveDesignButton");
+      const openDesignButton = document.getElementById("openDesignButton");
+      const openDesignInput = document.getElementById("openDesignInput");
+      const exportCsvButton = document.getElementById("exportCsvButton");
+      const exportPdfButton = document.getElementById("exportPdfButton");
+      const playButton = document.getElementById("playButton");
+      const restartButton = document.getElementById("restartButton");
+      const undoButton = document.getElementById("undoButton");
+      const redoButton = document.getElementById("redoButton");
+      const removePointButton = document.getElementById("removePointButton");
+      const resetTrackButton = document.getElementById("resetTrackButton");
+      const status = document.getElementById("status");
+      const saveStatus = document.getElementById("saveStatus");
+      const actionStatus = document.getElementById("actionStatus");
+      const points = pointDefaults.map(point => ({ ...point }));
+      const sampleCount = 500;
+      let samples = [];
+      let carX = 0;
+      let direction = 1;
+      let playing = false;
+      let dragIndex = -1;
+      let previousFrame = 0;
+      const undoStack = [];
+      const redoStack = [];
+      const historyLimit = 50;
+      let dragSnapshot = null;
+      let selectedPointIndex = -1;
+      let trackBounds;
+      let plotBounds;
 
-    const trackSvg = document.getElementById("trackSvg");
-    const trackDrawing = document.getElementById("trackDrawing");
-    const speedPlot = document.getElementById("speedPlot");
-    const gPlot = document.getElementById("gPlot");
-    const startButton = document.getElementById("startButton");
-    const pauseButton = document.getElementById("pauseButton");
-    const resetButton = document.getElementById("resetButton");
-    const speedReadout = document.getElementById("speedReadout");
-    const gReadout = document.getElementById("gReadout");
-    const statusLine = document.getElementById("statusLine");
-    const trackStatus = document.getElementById("trackStatus");
-    const trackStatusCaption = document.getElementById("trackStatusCaption");
-    const saveBaselineButton = document.getElementById("saveBaselineButton");
-    const clearBaselineButton = document.getElementById("clearBaselineButton");
-    const comparisonStatus = document.getElementById("comparisonStatus");
-    const comparisonResults = document.getElementById("comparisonResults");
-    const comparisonRows = document.getElementById("comparisonRows");
+      function setSaveMessage(message, isError) {
+        saveStatus.textContent = message;
+        saveStatus.classList.toggle("error", Boolean(isError));
+      }
 
-    let points = DEFAULT_POINTS.map(point => ({ ...point }));
-    let model;
-    let currentDistance = 0;
-    let rideState = "ready";
-    let pausedFrom = "running";
-    let frameId = 0;
-    let lastFrameTime = 0;
-    let elapsedTime = 0;
-    let dragIndex = -1;
-    let baseline = null;
+      function isValidTrack(candidate) {
+        return Array.isArray(candidate)
+          && candidate.length >= 2
+          && candidate.length <= 51
+          && candidate.every((point, index) =>
+            point
+            && Number.isFinite(point.x)
+            && Number.isFinite(point.y)
+            && point.x >= 0
+            && point.x <= 100
+            && point.y >= 0
+            && point.y <= 60
+            && (index === 0 || point.x - candidate[index - 1].x >= 2))
+          && candidate[0].x === 0
+          && candidate[candidate.length - 1].x === 100;
+      }
 
-    function splineAt(p0, p1, p2, p3, t) {
-      const t2 = t * t;
-      const t3 = t2 * t;
-      const calculate = (a, b, c, d) => ({
-        value: 0.5 * (2 * b + (-a + c) * t + (2 * a - 5 * b + 4 * c - d) * t2 + (-a + 3 * b - 3 * c + d) * t3),
-        first: 0.5 * ((-a + c) + 2 * (2 * a - 5 * b + 4 * c - d) * t + 3 * (-a + 3 * b - 3 * c + d) * t2),
-        second: 0.5 * (2 * (2 * a - 5 * b + 4 * c - d) + 6 * (-a + 3 * b - 3 * c + d) * t)
-      });
-      const x = calculate(p0.x, p1.x, p2.x, p3.x);
-      const h = calculate(p0.h, p1.h, p2.h, p3.h);
-      const tangentSize = Math.hypot(x.first, h.first);
-      if (!Number.isFinite(tangentSize) || tangentSize < 1e-9) {
+      function loadSavedTrack() {
+        let saved;
+        try {
+          saved = window.localStorage.getItem(storageKey);
+        } catch (error) {
+          setSaveMessage("Browser storage is unavailable; edits will not persist between visits.", true);
+          console.error("Could not read the saved track from browser storage.", error);
+          return;
+        }
+        if (saved === null) {
+          setSaveMessage("Track edits save automatically in this browser.");
+          return;
+        }
+        try {
+          const parsed = JSON.parse(saved);
+          const track = Array.isArray(parsed) ? { points: parsed } : parsed;
+          if (!track || !isValidTrack(track.points)) throw new Error("Saved track data is invalid.");
+          points.splice(0, points.length, ...track.points.map(point => ({ x: point.x, y: point.y })));
+          if (Number.isFinite(track.carPositionX) && track.carPositionX >= 0 && track.carPositionX <= 100) {
+            carX = track.carPositionX;
+          }
+          if (track.direction === -1 || track.direction === 1) direction = track.direction;
+          setSaveMessage("Restored your saved track from this browser.");
+        } catch (error) {
+          setSaveMessage("The saved track could not be read; using the starter track.", true);
+          console.error("Could not restore the saved track.", error);
+        }
+      }
+
+      function saveTrack() {
+        try {
+          window.localStorage.setItem(storageKey, JSON.stringify({
+            points,
+            carPositionX: carX,
+            direction
+          }));
+          setSaveMessage("Track saved in this browser. It remains until browser site data is cleared.");
+        } catch (error) {
+          setSaveMessage("Could not save this track in browser storage.", true);
+          console.error("Could not save the track to browser storage.", error);
+        }
+      }
+
+      function updateUndoButton() {
+        undoButton.disabled = undoStack.length === 0;
+        redoButton.disabled = redoStack.length === 0;
+        removePointButton.disabled = selectedPointIndex <= 0 || selectedPointIndex >= points.length - 1;
+      }
+
+      function captureTrackState() {
+        return {
+          points: points.map(point => ({ ...point })),
+          carX,
+          direction,
+          selectedPointIndex
+        };
+      }
+
+      function recordTrackEdit(previousState) {
+        undoStack.push(previousState);
+        if (undoStack.length > historyLimit) undoStack.shift();
+        redoStack.length = 0;
+        updateUndoButton();
+      }
+
+      function restoreTrackState(state) {
+        stopRide();
+        points.splice(0, points.length, ...state.points.map(point => ({ ...point })));
+        carX = state.carX;
+        direction = state.direction;
+        selectedPointIndex = state.selectedPointIndex >= 0 && state.selectedPointIndex < points.length
+          ? state.selectedPointIndex
+          : -1;
+        calculateSamples();
+        saveTrack();
+        updateUndoButton();
+        updateUI();
+      }
+
+      function setActionMessage(message, isError) {
+        actionStatus.textContent = message;
+        actionStatus.classList.toggle("error", Boolean(isError));
+      }
+
+      function fitCanvas(canvas, ctx) {
+        const rect = canvas.getBoundingClientRect();
+        const ratio = Math.max(1, window.devicePixelRatio || 1);
+        canvas.width = Math.round(rect.width * ratio);
+        canvas.height = Math.round(rect.height * ratio);
+        ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+        return { width: rect.width, height: rect.height };
+      }
+
+      function trackGeometry() {
+        const width = trackBounds.width;
+        const height = trackBounds.height;
+        return { left: 48, right: width - 18, top: 20, bottom: height - 38 };
+      }
+
+      function worldToCanvas(x, y) {
+        const box = trackGeometry();
+        return {
+          x: box.left + (x / 100) * (box.right - box.left),
+          y: box.bottom - (y / 60) * (box.bottom - box.top)
+        };
+      }
+
+      function canvasToWorld(x, y) {
+        const box = trackGeometry();
+        return {
+          x: Math.max(0, Math.min(100, ((x - box.left) / (box.right - box.left)) * 100)),
+          y: Math.max(0, Math.min(60, ((box.bottom - y) / (box.bottom - box.top)) * 60))
+        };
+      }
+
+      function trackAt(x) {
+        let segment = 0;
+        while (segment < points.length - 2 && x > points[segment + 1].x) segment++;
+        const a = points[Math.max(0, segment - 1)];
+        const b = points[segment];
+        const c = points[segment + 1];
+        const d = points[Math.min(points.length - 1, segment + 2)];
+        const span = c.x - b.x;
+        const t = span === 0 ? 0 : (x - b.x) / span;
+        const t2 = t * t;
+        const t3 = t2 * t;
+        const m1 = (c.y - a.y) / (c.x - a.x);
+        const m2 = (d.y - b.y) / (d.x - b.x);
+        const y = (2 * t3 - 3 * t2 + 1) * b.y
+          + (t3 - 2 * t2 + t) * span * m1
+          + (-2 * t3 + 3 * t2) * c.y
+          + (t3 - t2) * span * m2;
+        const dy = ((6 * t2 - 6 * t) * b.y
+          + (3 * t2 - 4 * t + 1) * span * m1
+          + (-6 * t2 + 6 * t) * c.y
+          + (3 * t2 - 2 * t) * span * m2) / span;
+        const ddy = ((12 * t - 6) * b.y
+          + (6 * t - 4) * span * m1
+          + (-12 * t + 6) * c.y
+          + (6 * t - 2) * span * m2) / (span * span);
+        return { y, slope: dy, curvature: ddy / Math.pow(1 + dy * dy, 1.5) };
+      }
+
+      function calculateSamples() {
+        const startHeight = points[0].y;
+        samples = [];
+        let trackDistance = 0;
+        let previous = null;
+        for (let i = 0; i <= sampleCount; i++) {
+          const x = (100 * i) / sampleCount;
+          const track = trackAt(x);
+          const energy = 2 * gravity * (startHeight - track.y);
+          const speed = Math.sqrt(Math.max(0, energy));
+          if (previous) trackDistance += Math.hypot(x - previous.x, track.y - previous.y);
+          samples.push({
+            x,
+            distance: trackDistance,
+            y: track.y,
+            speed,
+            g: 1 + (speed * speed * track.curvature) / gravity,
+            reachable: energy >= -1e-8
+          });
+          previous = { x, y: track.y };
+        }
+      }
+
+      function getRideSummary() {
+        const reachable = samples.filter(sample => sample.reachable);
+        const gValues = reachable.map(sample => sample.g);
+        const speedPeak = reachable.reduce((best, sample) => sample.speed > best.speed ? sample : best, reachable[0]);
+        const issue = failureInfo();
+        return {
+          maxSpeedMps: speedPeak.speed,
+          maxSpeedMph: speedPeak.speed * mphPerMps,
+          maxSpeedX: speedPeak.x,
+          minG: Math.min(...gValues),
+          maxG: Math.max(...gValues),
+          maxHeight: Math.max(...samples.map(sample => sample.y)),
+          minHeight: Math.min(...samples.map(sample => sample.y)),
+          horizontalSpan: samples[samples.length - 1].x,
+          totalTrackDistance: samples[samples.length - 1].distance,
+          energyFailure: samples.find(sample => !sample.reachable) || null,
+          gForceFailure: reachable.find(sample => sample.g > 4 || sample.g < -1) || null,
+          energyPass: !samples.some(sample => !sample.reachable),
+          gForcePass: !reachable.some(sample => sample.g > 4 || sample.g < -1),
+          overallPass: issue === null,
+          issue
+        };
+      }
+
+      function failureInfo() {
+        const firstEnergy = samples.find(sample => !sample.reachable);
+        const firstG = samples.find(sample => sample.reachable && (sample.g > 4 || sample.g < -1));
+        if (firstEnergy && (!firstG || firstEnergy.x <= firstG.x)) {
+          return { x: firstEnergy.x, message: "Insufficient energy: the car cannot reach this crest and rolls back." };
+        }
+        if (firstG) {
+          return { x: firstG.x, message: `G-force limit exceeded (${firstG.g.toFixed(2)} g). Limit: -1 g to 4 g.` };
+        }
         return null;
       }
-      return {
-        x: x.value,
-        h: h.value,
-        theta: Math.atan2(h.first, x.first),
-        curvature: (x.first * h.second - h.first * x.second) / (tangentSize * tangentSize * tangentSize)
-      };
-    }
 
-    function interpolateSample(a, b, fraction) {
-      const mix = (key) => a[key] + (b[key] - a[key]) * fraction;
-      return {
-        x: mix("x"),
-        h: mix("h"),
-        theta: mix("theta"),
-        curvature: mix("curvature"),
-        s: mix("s")
-      };
-    }
-
-    function addRideValues(sample, startHeight) {
-      if (sample.h > startHeight + 1e-8) {
-        sample.speed = null;
-        sample.load = null;
-        return sample;
+      function currentSample() {
+        const track = trackAt(carX);
+        const speed = Math.sqrt(Math.max(0, 2 * gravity * (points[0].y - track.y)));
+        return { ...track, speed, g: 1 + (speed * speed * track.curvature) / gravity };
       }
-      sample.speed = Math.sqrt(Math.max(0, 2 * GRAVITY * (startHeight - sample.h)));
-      sample.load = Math.cos(sample.theta) + sample.speed * sample.speed * sample.curvature / GRAVITY;
-      return sample;
-    }
 
-    function isOutsideLoad(load) {
-      return load > 4 + 1e-9 || load < -1 - 1e-9;
-    }
+      function drawTrack() {
+        trackBounds = fitCanvas(trackCanvas, trackCtx);
+        const ctx = trackCtx;
+        const { width, height } = trackBounds;
+        const box = trackGeometry();
+        ctx.clearRect(0, 0, width, height);
+        ctx.font = "11px system-ui, sans-serif";
+        ctx.textBaseline = "middle";
 
-    function loadFailureBetween(a, b) {
-      if (isOutsideLoad(a.load)) {
-        return { ...a, type: a.load > 4 ? "upper-g" : "lower-g" };
-      }
-      if (!isOutsideLoad(b.load)) {
-        return null;
-      }
-      const threshold = b.load > 4 ? 4 : -1;
-      const fraction = Math.max(0, Math.min(1, (threshold - a.load) / (b.load - a.load)));
-      const crossing = interpolateSample(a, b, fraction);
-      crossing.load = threshold;
-      crossing.speed = Math.sqrt(Math.max(0, 2 * GRAVITY * (a.startHeight - crossing.h)));
-      crossing.type = threshold === 4 ? "upper-g" : "lower-g";
-      return crossing;
-    }
+        for (let value = 0; value <= 60; value += 10) {
+          const p = worldToCanvas(0, value);
+          ctx.beginPath();
+          ctx.moveTo(box.left, p.y);
+          ctx.lineTo(box.right, p.y);
+          ctx.strokeStyle = value === 0 ? "#cbd4e2" : "#eef1f6";
+          ctx.lineWidth = 1;
+          ctx.stroke();
+          ctx.fillStyle = "#77839a";
+          ctx.textAlign = "right";
+          ctx.fillText(String(value), box.left - 10, p.y);
+        }
+        for (let value = 0; value <= 100; value += 20) {
+          const p = worldToCanvas(value, 0);
+          ctx.beginPath();
+          ctx.moveTo(p.x, box.top);
+          ctx.lineTo(p.x, box.bottom);
+          ctx.strokeStyle = "#f0f2f7";
+          ctx.stroke();
+          ctx.fillStyle = "#77839a";
+          ctx.textAlign = "center";
+          ctx.fillText(String(value), p.x, box.bottom + 18);
+        }
+        ctx.fillStyle = "#77839a";
+        ctx.textAlign = "left";
+        ctx.fillText("Height (m)", 7, box.top + 2);
+        ctx.textAlign = "right";
+        ctx.fillText("Distance (m)", box.right, height - 8);
 
-    function findFailure(samples, startHeight) {
-      const first = addRideValues({ ...samples[0], startHeight }, startHeight);
-      if (isOutsideLoad(first.load)) {
-        return { ...first, type: first.load > 4 ? "upper-g" : "lower-g" };
-      }
-      let previous = first;
-      for (let index = 1; index < samples.length; index += 1) {
-        const current = addRideValues({ ...samples[index], startHeight }, startHeight);
-        if (current.h > startHeight + 1e-8) {
-          const fraction = Math.max(0, Math.min(1, (startHeight - previous.h) / (current.h - previous.h)));
-          const turningPoint = interpolateSample(previous, current, fraction);
-          turningPoint.h = startHeight;
-          turningPoint.startHeight = startHeight;
-          addRideValues(turningPoint, startHeight);
-          const loadFailure = loadFailureBetween(previous, turningPoint);
-          if (loadFailure && loadFailure.s <= turningPoint.s + 1e-8) {
-            return loadFailure;
+        const start = worldToCanvas(0, points[0].y);
+        ctx.save();
+        ctx.setLineDash([5, 5]);
+        ctx.strokeStyle = "#0e9f91";
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(box.left, start.y);
+        ctx.lineTo(box.right, start.y);
+        ctx.stroke();
+        ctx.restore();
+
+        const issue = failureInfo();
+        if (issue) {
+          const marker = worldToCanvas(issue.x, trackAt(issue.x).y);
+          ctx.save();
+          ctx.setLineDash([4, 4]);
+          ctx.strokeStyle = "#d94343";
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          ctx.moveTo(marker.x, box.top);
+          ctx.lineTo(marker.x, box.bottom);
+          ctx.stroke();
+          ctx.restore();
+          ctx.fillStyle = "#d94343";
+          ctx.beginPath();
+          ctx.arc(marker.x, marker.y, 6, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        ctx.beginPath();
+        for (let i = 0; i <= sampleCount; i++) {
+          const p = worldToCanvas(samples[i].x, samples[i].y);
+          if (i === 0) ctx.moveTo(p.x, p.y);
+          else ctx.lineTo(p.x, p.y);
+        }
+        ctx.lineJoin = "round";
+        ctx.lineCap = "round";
+        ctx.strokeStyle = "#4263eb";
+        ctx.lineWidth = 4;
+        ctx.stroke();
+
+        points.forEach((point, index) => {
+          const p = worldToCanvas(point.x, point.y);
+          const selected = index === selectedPointIndex;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, selected ? 9 : index === 0 ? 7 : 6, 0, Math.PI * 2);
+          ctx.fillStyle = selected ? "#edf1ff" : index === 0 ? "#2547d4" : "#fff";
+          ctx.fill();
+          ctx.lineWidth = selected ? 3 : 2.5;
+          ctx.strokeStyle = selected ? "#e87835" : "#4263eb";
+          ctx.stroke();
+          if (index === 0) {
+            ctx.fillStyle = "#2547d4";
+            ctx.font = "700 10px system-ui, sans-serif";
+            ctx.textAlign = "left";
+            ctx.textBaseline = "bottom";
+            ctx.fillText("START", p.x + 9, p.y - 7);
           }
-          turningPoint.type = "rollback";
-          return turningPoint;
-        }
-        const loadFailure = loadFailureBetween(previous, current);
-        if (loadFailure) {
-          return loadFailure;
-        }
-        previous = current;
-      }
-      return null;
-    }
+        });
 
-    function calculateModel(candidatePoints) {
-      if (candidatePoints.length !== 9) {
-        return { error: "The track must contain exactly nine control points." };
-      }
-      for (let index = 0; index < candidatePoints.length; index += 1) {
-        const point = candidatePoints[index];
-        if (!Number.isFinite(point.x) || point.x < 0 || point.x > 500) {
-          return { error: "Horizontal positions must stay between 0 m and 500 m." };
-        }
-        if (!Number.isFinite(point.h) || point.h < 0 || point.h > 100) {
-          return { error: "Heights must stay between 0 m and 100 m." };
-        }
-        if (index > 0 && point.x <= candidatePoints[index - 1].x) {
-          return { error: "Control points must remain in left-to-right order." };
-        }
+        const car = currentSample();
+        const carPoint = worldToCanvas(carX, car.y);
+        ctx.save();
+        ctx.translate(carPoint.x, carPoint.y - 8);
+        ctx.rotate(Math.atan(car.slope));
+        ctx.fillStyle = "#e87835";
+        ctx.strokeStyle = "#fff";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.roundRect(-10, -5, 20, 10, 4);
+        ctx.fill();
+        ctx.stroke();
+        ctx.restore();
       }
 
-      const raw = [];
-      const knotDistances = [];
-      let distance = 0;
-      let previousRaw = null;
-      for (let segment = 0; segment < candidatePoints.length - 1; segment += 1) {
-        const p0 = candidatePoints[Math.max(0, segment - 1)];
-        const p1 = candidatePoints[segment];
-        const p2 = candidatePoints[segment + 1];
-        const p3 = candidatePoints[Math.min(candidatePoints.length - 1, segment + 2)];
-        const chord = Math.hypot(p2.x - p1.x, p2.h - p1.h);
-        const steps = Math.max(80, Math.ceil(chord * 8));
-        for (let step = segment === 0 ? 0 : 1; step <= steps; step += 1) {
-          const value = splineAt(p0, p1, p2, p3, step / steps);
-          if (!value) {
-            return { error: "The track contains a point with undefined curvature." };
+      function drawPlot() {
+        plotBounds = fitCanvas(plotCanvas, plotCtx);
+        const ctx = plotCtx;
+        const { width, height } = plotBounds;
+        const box = { left: 48, right: width - 18, top: 18, bottom: height - 33 };
+        ctx.clearRect(0, 0, width, height);
+        const maxSpeed = Math.max(60, ...samples.map(sample => sample.speed * mphPerMps));
+        const speedMax = Math.ceil(maxSpeed / 20) * 20;
+        const gMin = -2;
+        const gMax = 6;
+
+        for (let i = 0; i <= 4; i++) {
+          const y = box.top + ((box.bottom - box.top) * i) / 4;
+          ctx.beginPath();
+          ctx.moveTo(box.left, y);
+          ctx.lineTo(box.right, y);
+          ctx.strokeStyle = "#eef1f6";
+          ctx.stroke();
+        }
+        for (let i = 0; i <= 5; i++) {
+          const x = box.left + ((box.right - box.left) * i) / 5;
+          ctx.beginPath();
+          ctx.moveTo(x, box.top);
+          ctx.lineTo(x, box.bottom);
+          ctx.strokeStyle = "#f1f3f7";
+          ctx.stroke();
+          ctx.fillStyle = "#77839a";
+          ctx.font = "10px system-ui, sans-serif";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "top";
+          ctx.fillText(String(i * 20), x, box.bottom + 7);
+        }
+        ctx.fillStyle = "#77839a";
+        ctx.textAlign = "right";
+        ctx.textBaseline = "middle";
+        ctx.font = "10px system-ui, sans-serif";
+        for (let i = 0; i <= 4; i++) {
+          ctx.fillText(String(Math.round(speedMax * (1 - i / 4))), box.left - 7, box.top + ((box.bottom - box.top) * i) / 4);
+        }
+        ctx.textAlign = "left";
+        for (let i = 0; i <= 4; i++) {
+          ctx.fillText(String(gMax - i * 2), box.right + 5, box.top + ((box.bottom - box.top) * i) / 4);
+        }
+        ctx.fillStyle = "#65728a";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "bottom";
+        ctx.fillText("Distance (m)", (box.left + box.right) / 2, height - 1);
+
+        const drawSeries = (color, value, min, max, dashed) => {
+          ctx.beginPath();
+          samples.forEach((sample, index) => {
+            const x = box.left + (sample.x / 100) * (box.right - box.left);
+            const v = Math.max(min, Math.min(max, value(sample)));
+            const y = box.bottom - ((v - min) / (max - min)) * (box.bottom - box.top);
+            if (index === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+          });
+          ctx.strokeStyle = color;
+          ctx.lineWidth = 2;
+          ctx.lineJoin = "round";
+          ctx.setLineDash(dashed ? [4, 4] : []);
+          ctx.stroke();
+          ctx.setLineDash([]);
+        };
+        drawSeries("#4263eb", sample => sample.speed * mphPerMps, 0, speedMax, false);
+        drawSeries("#e87835", sample => sample.g, gMin, gMax, false);
+
+        const currentX = box.left + (carX / 100) * (box.right - box.left);
+        ctx.save();
+        ctx.setLineDash([3, 4]);
+        ctx.strokeStyle = "#8995aa";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(currentX, box.top);
+        ctx.lineTo(currentX, box.bottom);
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      function updateUI() {
+        const car = currentSample();
+        document.getElementById("speedValue").textContent = (car.speed * mphPerMps).toFixed(2);
+        document.getElementById("gValue").textContent = car.g.toFixed(2);
+        document.getElementById("distanceValue").textContent = carX.toFixed(1);
+        document.getElementById("heightValue").textContent = car.y.toFixed(1);
+        const issue = failureInfo();
+        status.textContent = issue ? issue.message : "Track is within the model's energy and g-force limits.";
+        status.classList.toggle("visible", Boolean(issue) || !playing);
+        status.classList.toggle("safe", !issue);
+        drawTrack();
+        drawPlot();
+      }
+
+      function resetRide() {
+        playing = false;
+        direction = 1;
+        carX = 0;
+        previousFrame = 0;
+        playButton.textContent = "Play ride";
+        saveTrack();
+        updateUI();
+      }
+
+      function stopRide() {
+        playing = false;
+        previousFrame = 0;
+        playButton.textContent = "Play ride";
+      }
+
+      function undoTrackEdit() {
+        if (undoStack.length === 0) return;
+        redoStack.push(captureTrackState());
+        restoreTrackState(undoStack.pop());
+      }
+
+      function redoTrackEdit() {
+        if (redoStack.length === 0) return;
+        undoStack.push(captureTrackState());
+        if (undoStack.length > historyLimit) undoStack.shift();
+        restoreTrackState(redoStack.pop());
+      }
+
+      function removeSelectedPoint() {
+        if (selectedPointIndex <= 0 || selectedPointIndex >= points.length - 1) return;
+        stopRide();
+        const previousState = captureTrackState();
+        points.splice(selectedPointIndex, 1);
+        selectedPointIndex = -1;
+        carX = 0;
+        direction = 1;
+        recordTrackEdit(previousState);
+        calculateSamples();
+        saveTrack();
+        updateUI();
+      }
+
+      function insertControlPoint(event) {
+        const rect = trackCanvas.getBoundingClientRect();
+        const position = canvasToWorld(event.clientX - rect.left, event.clientY - rect.top);
+        const insertionIndex = points.findIndex(point => point.x > position.x);
+        if (points.length >= 51 || insertionIndex <= 0 || insertionIndex >= points.length) {
+          setActionMessage("Choose a spot at least 2 m from the track ends and other points.", true);
+          return;
+        }
+        const left = points[insertionIndex - 1];
+        const right = points[insertionIndex];
+        if (position.x - left.x < 2 || right.x - position.x < 2) {
+          setActionMessage("New points must be at least 2 m apart.", true);
+          return;
+        }
+        stopRide();
+        const previousState = captureTrackState();
+        points.splice(insertionIndex, 0, { x: position.x, y: position.y });
+        selectedPointIndex = insertionIndex;
+        carX = 0;
+        direction = 1;
+        recordTrackEdit(previousState);
+        calculateSamples();
+        saveTrack();
+        updateUI();
+        setActionMessage("Control point added. Drag it to refine the track.");
+      }
+
+      function resetTrack() {
+        if (points.length === pointDefaults.length && points.every((point, index) =>
+          point.x === pointDefaults[index].x && point.y === pointDefaults[index].y)) return;
+        stopRide();
+        const previousState = captureTrackState();
+        points.splice(0, points.length, ...pointDefaults.map(point => ({ ...point })));
+        direction = 1;
+        carX = 0;
+        selectedPointIndex = -1;
+        recordTrackEdit(previousState);
+        calculateSamples();
+        saveTrack();
+        updateUI();
+      }
+
+      function currentDesign() {
+        return {
+          format: "roller-coaster-designer",
+          version: 1,
+          savedAt: new Date().toISOString(),
+          units: { distance: "m", height: "m", speed: "m/s" },
+          physics: { gravity, friction: false, airDrag: false, minimumG: -1, maximumG: 4 },
+          track: {
+            geometry: "height-profile",
+            interpolation: "catmull-rom",
+            horizontalRange: [0, 100],
+            heightRange: [0, 60],
+            points: points.map(point => ({ x: point.x, y: point.y })),
+            loops: []
+          },
+          car: {
+            startX: 0,
+            startHeight: points[0].y,
+            currentPositionX: carX,
+            direction
           }
-          if (value.h < -1e-7 || value.h > 100 + 1e-7) {
-            return { error: "The smooth track must stay between 0 m and 100 m high." };
-          }
-          if (previousRaw) {
-            if (value.x <= previousRaw.x + 1e-8) {
-              return { error: "The smooth track must keep moving from left to right." };
-            }
-            distance += Math.hypot(value.x - previousRaw.x, value.h - previousRaw.h);
-          }
-          const entry = { ...value, s: distance };
-          raw.push(entry);
-          previousRaw = entry;
-          if (step === steps) {
-            knotDistances.push(distance);
-          }
+        };
+      }
+
+      function readDesignFile(data) {
+        if (!data || typeof data !== "object" || Array.isArray(data)) {
+          throw new Error("The selected file is not a coaster design.");
+        }
+        if (data.format !== "roller-coaster-designer" || data.version !== 1) {
+          throw new Error("This coaster file format or version is not supported.");
+        }
+        if (!data.units || data.units.distance !== "m" || data.units.height !== "m" || data.units.speed !== "m/s"
+          || !data.track || data.track.geometry !== "height-profile"
+          || data.track.interpolation !== "catmull-rom"
+          || !Array.isArray(data.track.horizontalRange) || data.track.horizontalRange[0] !== 0 || data.track.horizontalRange[1] !== 100
+          || !Array.isArray(data.track.heightRange) || data.track.heightRange[0] !== 0 || data.track.heightRange[1] !== 60
+          || !isValidTrack(data.track.points)) {
+          throw new Error("The file contains invalid track data.");
+        }
+        if (!Array.isArray(data.track.loops)) {
+          throw new Error("The file is missing its track loop settings.");
+        }
+        if (data.track.loops.length > 0) {
+          throw new Error("Loop geometry is not supported by this coaster model.");
+        }
+        if (!data.physics || data.physics.gravity !== gravity
+          || data.physics.friction !== false || data.physics.airDrag !== false
+          || data.physics.minimumG !== -1 || data.physics.maximumG !== 4) {
+          throw new Error("The file uses ride settings that this model does not support.");
+        }
+        if (!data.car || data.car.startX !== 0 || data.car.startHeight !== data.track.points[0].y
+          || !Number.isFinite(data.car.currentPositionX)
+          || data.car.currentPositionX < 0 || data.car.currentPositionX > 100
+          || (data.car.direction !== -1 && data.car.direction !== 1)) {
+          throw new Error("The file contains invalid car position or starting settings.");
+        }
+        return data;
+      }
+
+      function downloadBlob(blob, filename) {
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = filename;
+        link.hidden = true;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+      }
+
+      function fileDateStamp() {
+        return new Date().toISOString().slice(0, 10);
+      }
+
+      function saveDesignFile() {
+        try {
+          const json = JSON.stringify(currentDesign(), null, 2);
+          downloadBlob(new Blob([json], { type: "application/json" }), `roller-coaster-design-${fileDateStamp()}.json`);
+          setActionMessage("Coaster design file saved.");
+        } catch (error) {
+          setActionMessage("Could not save the coaster design file.", true);
+          console.error("Could not save the coaster design file.", error);
         }
       }
 
-      if (raw.length < 2 || !Number.isFinite(distance) || distance <= 0) {
-        return { error: "The track must have a positive length." };
-      }
-      const targets = [];
-      const divisions = Math.ceil(distance / 0.25);
-      for (let index = 0; index <= divisions; index += 1) {
-        targets.push(distance * index / divisions);
-      }
-      targets.push(...knotDistances);
-      targets.sort((a, b) => a - b);
-      const uniqueTargets = targets.filter((target, index) => index === 0 || target - targets[index - 1] > 1e-7);
-      const samples = [];
-      let rawIndex = 0;
-      for (const target of uniqueTargets) {
-        while (rawIndex < raw.length - 2 && raw[rawIndex + 1].s < target) {
-          rawIndex += 1;
+      async function openDesignFile(file) {
+        try {
+          const parsed = JSON.parse(await file.text());
+          const design = readDesignFile(parsed);
+          points.splice(0, points.length, ...design.track.points.map(point => ({ x: point.x, y: point.y })));
+          carX = design.car.currentPositionX;
+          direction = design.car.direction;
+          playing = false;
+          previousFrame = 0;
+          playButton.textContent = "Play ride";
+          undoStack.length = 0;
+          redoStack.length = 0;
+          selectedPointIndex = -1;
+          updateUndoButton();
+          calculateSamples();
+          saveTrack();
+          updateUI();
+          setActionMessage(`Opened ${file.name}.`);
+        } catch (error) {
+          const message = error instanceof Error ? error.message : "The coaster design could not be opened.";
+          setActionMessage(message, true);
+          console.error("Could not open the coaster design file.", error);
         }
-        const a = raw[rawIndex];
-        const b = raw[Math.min(rawIndex + 1, raw.length - 1)];
-        const fraction = b.s === a.s ? 0 : (target - a.s) / (b.s - a.s);
-        const sample = interpolateSample(a, b, fraction);
-        sample.s = target;
-        samples.push(sample);
       }
 
-      const startHeight = candidatePoints[0].h;
-      const failure = findFailure(samples, startHeight);
-      const endDistance = failure ? failure.s : distance;
-      const profile = samples
-        .filter(sample => sample.s < endDistance - 1e-7)
-        .map(sample => addRideValues({ ...sample }, startHeight));
-      if (failure) {
-        profile.push(addRideValues({ ...failure, startHeight }, startHeight));
-      } else if (profile.length === 0 || profile[profile.length - 1].s < distance - 1e-7) {
-        profile.push(addRideValues({ ...samples[samples.length - 1], startHeight }, startHeight));
-      }
-      if (profile.length === 0) {
-        profile.push(addRideValues({ ...samples[0], startHeight }, startHeight));
+      function exportRideCsv() {
+        try {
+          const rows = [[
+            "horizontal_distance_m",
+            "track_distance_m",
+            "speed_m_s",
+            "speed_mph",
+            "height_m",
+            "vertical_g",
+            "signed_curvature_per_m",
+            "reachable"
+          ]];
+          samples.forEach(sample => {
+            rows.push([
+              sample.x.toFixed(3),
+              sample.distance.toFixed(3),
+              sample.speed.toFixed(4),
+              (sample.speed * mphPerMps).toFixed(4),
+              sample.y.toFixed(4),
+              sample.g.toFixed(4),
+              trackAt(sample.x).curvature.toFixed(6),
+              sample.reachable ? "true" : "false"
+            ]);
+          });
+          const csv = "\uFEFF" + rows.map(row => row.join(",")).join("\r\n");
+          downloadBlob(new Blob([csv], { type: "text/csv;charset=utf-8" }), `roller-coaster-ride-data-${fileDateStamp()}.csv`);
+          setActionMessage(`Ride data exported (${samples.length} sampled locations).`);
+        } catch (error) {
+          setActionMessage("Could not export ride data to CSV.", true);
+          console.error("Could not export ride data to CSV.", error);
+        }
       }
 
-      let time = 0;
-      let stallDistance = null;
-      profile[0].time = 0;
-      for (let index = 1; index < profile.length; index += 1) {
-        const a = profile[index - 1];
-        const b = profile[index];
-        const deltaS = b.s - a.s;
-        const speedSum = a.speed + b.speed;
-        let deltaTime;
-        if (speedSum > 1e-8) {
-          deltaTime = 2 * deltaS / speedSum;
+      function pdfSafeText(value) {
+        return String(value)
+          .replace(/\u00b2/g, "^2")
+          .replace(/\u00d7/g, "x")
+          .replace(/[\u2013\u2014]/g, "-")
+          .replace(/[\u2018\u2019]/g, "'")
+          .replace(/[\u201c\u201d]/g, '"')
+          .replace(/[^\x20-\x7e]/g, "?");
+      }
+
+      function pdfEscape(value) {
+        return pdfSafeText(value).replace(/([\\()])/g, "\\$1");
+      }
+
+      function createPdfDocument(commands) {
+        const stream = commands.join("\n") + "\n";
+        const objects = [
+          "<< /Type /Catalog /Pages 2 0 R >>",
+          "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
+          "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R /F2 5 0 R >> >> /Contents 6 0 R >>",
+          "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
+          "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>",
+          `<< /Length ${stream.length} >>\nstream\n${stream}endstream`
+        ];
+        let document = "%PDF-1.4\n";
+        const offsets = [0];
+        objects.forEach((object, index) => {
+          offsets.push(document.length);
+          document += `${index + 1} 0 obj\n${object}\nendobj\n`;
+        });
+        const xrefOffset = document.length;
+        document += `xref\n0 ${objects.length + 1}\n0000000000 65535 f \n`;
+        offsets.slice(1).forEach(offset => {
+          document += `${String(offset).padStart(10, "0")} 00000 n \n`;
+        });
+        document += `trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xrefOffset}\n%%EOF`;
+        return document;
+      }
+
+      function createRideReport() {
+        const summary = getRideSummary();
+        const commands = [];
+        const text = (x, y, value, size, bold) => {
+          commands.push(`BT /F${bold ? 2 : 1} ${size} Tf 1 0 0 1 ${x.toFixed(2)} ${y.toFixed(2)} Tm (${pdfEscape(value)}) Tj ET`);
+        };
+        const line = (x1, y1, x2, y2, color, width, dash) => {
+          commands.push(`${color} RG ${width} w ${dash || "[] 0 d"} ${x1.toFixed(2)} ${y1.toFixed(2)} m ${x2.toFixed(2)} ${y2.toFixed(2)} l S [] 0 d`);
+        };
+        const section = (y, label) => {
+          text(46, y, label, 11, true);
+          line(46, y - 5, 566, y - 5, "0.84 0.87 0.92", 0.7);
+        };
+        const number = value => Number.isFinite(value) ? value.toFixed(2) : "n/a";
+
+        text(46, 754, "ROLLER COASTER - RIDE CALCULATION SHEET", 16, true);
+        text(46, 737, "Frictionless educational simulation | Generated " + new Date().toLocaleString(), 8, false);
+        line(46, 725, 566, 725, "0.26 0.39 0.92", 2);
+
+        section(707, "Ride inputs and settings");
+        text(46, 690, `Start: x = 0.00 m, h0 = ${number(points[0].y)} m | Car position: x = ${number(carX)} m, direction: ${direction === 1 ? "forward" : "rollback"}`, 8, false);
+        text(46, 676, `Gravity: ${gravity.toFixed(2)} m/s^2 | Friction: none | Air drag: none | Initial speed: 0.00 m/s`, 8, false);
+        text(46, 662, `Track: 0-100 m horizontal, 0-60 m height | Smooth Catmull-Rom profile | ${points.length} control points | Loops: not modeled`, 8, false);
+
+        section(641, "Track layout");
+        const graph = { x: 62, y: 460, width: 496, height: 164 };
+        const graphX = x => graph.x + (x / 100) * graph.width;
+        const graphY = y => graph.y + (y / 60) * graph.height;
+        line(graph.x, graph.y, graph.x + graph.width, graph.y, "0.45 0.50 0.58", 0.8);
+        line(graph.x, graph.y, graph.x, graph.y + graph.height, "0.45 0.50 0.58", 0.8);
+        for (let height = 0; height <= 60; height += 10) {
+          const y = graphY(height);
+          line(graph.x, y, graph.x + graph.width, y, "0.91 0.93 0.96", 0.5);
+          text(38, y - 2, String(height), 7, false);
+        }
+        for (let distance = 0; distance <= 100; distance += 20) {
+          const x = graphX(distance);
+          line(x, graph.y, x, graph.y + graph.height, "0.93 0.94 0.96", 0.5);
+          text(x - 5, graph.y - 12, String(distance), 7, false);
+        }
+        text(282, graph.y - 24, "Horizontal distance (m)", 7, false);
+        const startY = graphY(points[0].y);
+        line(graph.x, startY, graph.x + graph.width, startY, "0.05 0.62 0.57", 0.8, "[4 3] 0 d");
+        commands.push("0.26 0.39 0.92 RG 2.2 w [] 0 d");
+        samples.forEach((sample, index) => {
+          const x = graphX(sample.x);
+          const y = graphY(sample.y);
+          commands.push(`${x.toFixed(2)} ${y.toFixed(2)} ${index === 0 ? "m" : "l"}`);
+        });
+        commands.push("S");
+        const issue = summary.issue;
+        if (issue) {
+          const issueX = graphX(issue.x);
+          line(issueX, graph.y, issueX, graph.y + graph.height, "0.85 0.26 0.26", 1, "[3 3] 0 d");
+          const issueY = graphY(trackAt(issue.x).y);
+          commands.push(`0.85 0.26 0.26 rg ${issueX - 3} ${issueY - 3} 6 6 re f`);
+        }
+        const currentX = graphX(carX);
+        const currentY = graphY(trackAt(carX).y);
+        commands.push(`0.91 0.47 0.20 rg ${currentX - 3} ${currentY - 3} 6 6 re f`);
+        text(46, 440, "Blue: track | Green: starting height | Orange: car | Red: first failure (if any)", 7, false);
+
+        section(421, "Simulation results");
+        text(46, 403, `Maximum speed: ${number(summary.maxSpeedMph)} mph (${number(summary.maxSpeedMps)} m/s) at x = ${number(summary.maxSpeedX)} m`, 8, false);
+        text(315, 403, `Maximum height: ${number(summary.maxHeight)} m`, 8, false);
+        text(46, 387, `Total track distance: ${number(summary.totalTrackDistance)} m`, 8, false);
+        text(315, 387, `Horizontal span: ${number(summary.horizontalSpan)} m`, 8, false);
+        text(46, 371, `Minimum vertical G-force: ${number(summary.minG)} g`, 8, false);
+        text(315, 371, `Maximum vertical G-force: ${number(summary.maxG)} g`, 8, false);
+
+        section(348, "Model checks");
+        const energyCheck = summary.energyPass
+          ? "PASS - all sampled locations are within available energy"
+          : `FAIL - first unreachable point near x = ${number(summary.energyFailure.x)} m`;
+        const gCheck = summary.gForcePass
+          ? "PASS - vertical G-force stays between -1 g and 4 g"
+          : `FAIL - first G-force violation near x = ${number(summary.gForceFailure.x)} m (${number(summary.gForceFailure.g)} g)`;
+        text(46, 331, "Energy: " + energyCheck, 8, false);
+        text(46, 316, "G-force: " + gCheck, 8, false);
+        text(46, 301, `Overall: ${summary.overallPass ? "PASS - within modeled limits" : "FAIL - ride exceeds a modeled limit"}`, 8, true);
+
+        section(281, "Track control points");
+        text(46, 264, `Control points: ${points.length} | Full coordinates are preserved in the JSON design file.`, 7, false);
+        if (points.length <= 7) {
+          const pointLabels = points.map((point, index) => `P${index + 1} (${point.x.toFixed(1)} m, ${point.y.toFixed(1)} m)`);
+          text(46, 251, pointLabels.slice(0, 4).join("   "), 7, false);
+          text(46, 238, pointLabels.slice(4).join("   "), 7, false);
+        }
+        text(46, 225, "Calculation basis: v = sqrt(max(0, 2g(h0 - h))); G = 1 + v^2 k/g, where k is signed track curvature.", 8, false);
+        text(46, 210, "Energy check compares track height with the starting height. Limits: -1 g <= G <= 4 g.", 8, false);
+        line(46, 54, 566, 54, "0.84 0.87 0.92", 0.7);
+        text(46, 38, "Educational model only. This report is not real-world ride-safety or structural certification.", 7, false);
+
+        return createPdfDocument(commands);
+      }
+
+      function exportRideReport() {
+        try {
+          const pdf = createRideReport();
+          downloadBlob(new Blob([pdf], { type: "application/pdf" }), `roller-coaster-calculation-sheet-${fileDateStamp()}.pdf`);
+          setActionMessage("Ride calculation sheet generated as a PDF.");
+        } catch (error) {
+          setActionMessage("Could not generate the ride calculation sheet.", true);
+          console.error("Could not generate the ride calculation sheet.", error);
+        }
+      }
+
+      function animate(timestamp) {
+        if (!playing) return;
+        if (!previousFrame) previousFrame = timestamp;
+        const dt = Math.min((timestamp - previousFrame) / 1000, 0.04);
+        previousFrame = timestamp;
+        const car = currentSample();
+        const energy = 2 * gravity * (points[0].y - car.y);
+        const rollingSpeed = Math.sqrt(Math.max(0, energy));
+        const step = Math.max(rollingSpeed, 0.8) * dt / Math.sqrt(1 + car.slope * car.slope);
+        const nextX = carX + direction * step;
+        const boundedX = Math.max(0, Math.min(100, nextX));
+        const nextHeight = trackAt(boundedX).y;
+        if (nextHeight > points[0].y + 0.03) {
+          direction *= -1;
+          carX = Math.max(0, Math.min(100, carX + direction * step * 0.5));
         } else {
-          const tangent = (a.theta + b.theta) / 2;
-          const downhillAcceleration = -GRAVITY * Math.sin(tangent);
-          if (downhillAcceleration <= 1e-5) {
-            stallDistance = a.s;
-            b.time = Infinity;
-            break;
+          carX = boundedX;
+        }
+        const issue = failureInfo();
+        if (issue && carX >= issue.x) {
+          carX = issue.x;
+          playing = false;
+        }
+        if (carX <= 0.05 && direction < 0) {
+          carX = 0;
+          playing = false;
+        }
+        if (carX >= 99.95) {
+          carX = 100;
+          playing = false;
+        }
+        playButton.textContent = playing ? "Pause ride" : "Play ride";
+        updateUI();
+        if (playing) requestAnimationFrame(animate);
+        else saveTrack();
+      }
+
+      playButton.addEventListener("click", () => {
+        if (playing) {
+          playing = false;
+          playButton.textContent = "Play ride";
+          saveTrack();
+          updateUI();
+        } else {
+          if (carX >= 99.95 || (carX <= 0.05 && direction < 0)) resetRide();
+          playing = true;
+          previousFrame = 0;
+          playButton.textContent = "Pause ride";
+          requestAnimationFrame(animate);
+        }
+      });
+      restartButton.addEventListener("click", resetRide);
+      undoButton.addEventListener("click", undoTrackEdit);
+      redoButton.addEventListener("click", redoTrackEdit);
+      removePointButton.addEventListener("click", removeSelectedPoint);
+      resetTrackButton.addEventListener("click", resetTrack);
+      saveDesignButton.addEventListener("click", () => {
+        fileMenu.open = false;
+        saveDesignFile();
+      });
+      openDesignButton.addEventListener("click", () => {
+        fileMenu.open = false;
+        openDesignInput.click();
+      });
+      openDesignInput.addEventListener("change", async () => {
+        const file = openDesignInput.files && openDesignInput.files[0];
+        if (!file) return;
+        await openDesignFile(file);
+        openDesignInput.value = "";
+      });
+      exportCsvButton.addEventListener("click", exportRideCsv);
+      exportPdfButton.addEventListener("click", exportRideReport);
+
+      trackCanvas.addEventListener("pointerdown", event => {
+        if (playing) return;
+        if (event.shiftKey) {
+          event.preventDefault();
+          insertControlPoint(event);
+          return;
+        }
+        const rect = trackCanvas.getBoundingClientRect();
+        const x = event.clientX - rect.left;
+        const y = event.clientY - rect.top;
+        dragIndex = points.findIndex(point => {
+          const p = worldToCanvas(point.x, point.y);
+          return Math.hypot(p.x - x, p.y - y) < 16;
+        });
+        if (dragIndex >= 0) {
+          selectedPointIndex = dragIndex;
+          dragSnapshot = captureTrackState();
+          trackCanvas.setPointerCapture(event.pointerId);
+          trackCanvas.style.cursor = "grabbing";
+          updateUndoButton();
+          updateUI();
+        } else {
+          selectedPointIndex = -1;
+          updateUndoButton();
+          updateUI();
+        }
+      });
+      trackCanvas.addEventListener("pointermove", event => {
+        if (dragIndex < 0) return;
+        const rect = trackCanvas.getBoundingClientRect();
+        const next = canvasToWorld(event.clientX - rect.left, event.clientY - rect.top);
+        if (dragIndex === 0) next.x = 0;
+        else if (dragIndex === points.length - 1) next.x = 100;
+        else {
+          next.x = Math.max(points[dragIndex - 1].x + 2, next.x);
+          next.x = Math.min(points[dragIndex + 1].x - 2, next.x);
+        }
+        points[dragIndex].x = next.x;
+        points[dragIndex].y = next.y;
+        carX = 0;
+        direction = 1;
+        calculateSamples();
+        updateUI();
+      });
+      const finishDrag = () => {
+        if (dragIndex >= 0 && dragSnapshot) {
+          const previousPoints = dragSnapshot.points;
+          const changed = points.length !== previousPoints.length || points.some((point, index) =>
+            point.x !== previousPoints[index].x || point.y !== previousPoints[index].y);
+          if (changed) {
+            recordTrackEdit(dragSnapshot);
+            saveTrack();
           }
-          deltaTime = Math.sqrt(2 * deltaS / downhillAcceleration);
         }
-        time += deltaTime;
-        b.time = time;
-      }
-
-      return {
-        samples,
-        profile,
-        failure,
-        distance,
-        endDistance,
-        startHeight,
-        duration: time,
-        stallDistance
+        dragIndex = -1;
+        dragSnapshot = null;
+        trackCanvas.style.cursor = "crosshair";
+        updateUndoButton();
+        updateUI();
       };
-    }
+      trackCanvas.addEventListener("pointerup", finishDrag);
+      trackCanvas.addEventListener("pointercancel", finishDrag);
 
-    function axisMaximum(pointsList) {
-      const maximumX = Math.max(...pointsList.map(point => point.x));
-      return Math.min(500, Math.max(100, Math.ceil((maximumX + 20) / 20) * 20));
-    }
-
-    function mapX(x, xMax) {
-      return TRACK_AREA.left + (x / xMax) * (TRACK_AREA.right - TRACK_AREA.left);
-    }
-
-    function mapHeight(height) {
-      return TRACK_AREA.bottom - (height / 100) * (TRACK_AREA.bottom - TRACK_AREA.top);
-    }
-
-    function mapDistance(distance, maxDistance, left, right) {
-      return left + (distance / maxDistance) * (right - left);
-    }
-
-    function getSampleAtDistance(distance) {
-      const list = model.profile;
-      if (distance <= list[0].s) {
-        return list[0];
-      }
-      if (distance >= list[list.length - 1].s) {
-        return list[list.length - 1];
-      }
-      let low = 0;
-      let high = list.length - 1;
-      while (low + 1 < high) {
-        const middle = Math.floor((low + high) / 2);
-        if (list[middle].s <= distance) {
-          low = middle;
-        } else {
-          high = middle;
-        }
-      }
-      const fraction = (distance - list[low].s) / (list[high].s - list[low].s);
-      const result = interpolateSample(list[low], list[high], fraction);
-      result.speed = list[low].speed + (list[high].speed - list[low].speed) * fraction;
-      result.load = list[low].load + (list[high].load - list[low].load) * fraction;
-      return result;
-    }
-
-    function getSampleAtTime(time) {
-      const list = model.profile;
-      if (time <= 0 || list.length === 1) {
-        return list[0];
-      }
-      let low = 0;
-      let high = list.length - 1;
-      while (low + 1 < high) {
-        const middle = Math.floor((low + high) / 2);
-        if (list[middle].time <= time) {
-          low = middle;
-        } else {
-          high = middle;
-        }
-      }
-      if (!Number.isFinite(list[high].time)) {
-        return list[low];
-      }
-      const span = list[high].time - list[low].time;
-      const fraction = span > 0 ? Math.max(0, Math.min(1, (time - list[low].time) / span)) : 0;
-      return interpolateRideSamples(list[low], list[high], fraction);
-    }
-
-    function interpolateRideSamples(a, b, fraction) {
-      const result = interpolateSample(a, b, fraction);
-      result.speed = a.speed + (b.speed - a.speed) * fraction;
-      result.load = a.load + (b.load - a.load) * fraction;
-      return result;
-    }
-
-    function svgText(x, y, text, anchor) {
-      return `<text class="axis-label" x="${x}" y="${y}" text-anchor="${anchor || "start"}">${text}</text>`;
-    }
-
-    function renderTrack() {
-      const axisPoints = baseline ? points.concat(baseline.points) : points;
-      const xMax = axisMaximum(axisPoints);
-      const xTicks = Array.from({ length: 6 }, (_, index) => xMax * index / 5);
-      const yTicks = [0, 25, 50, 75, 100];
-      let drawing = '<g class="gridline">';
-      yTicks.forEach(value => {
-        const y = mapHeight(value);
-        drawing += `<path d="M${TRACK_AREA.left} ${y}H${TRACK_AREA.right}"></path>`;
-      });
-      xTicks.forEach(value => {
-        const x = mapX(value, xMax);
-        drawing += `<path d="M${x} ${TRACK_AREA.top}V${TRACK_AREA.bottom}"></path>`;
-      });
-      drawing += "</g><g>";
-      yTicks.forEach(value => {
-        drawing += svgText(61, mapHeight(value) + 4, String(value), "end");
-      });
-      xTicks.forEach(value => {
-        drawing += svgText(mapX(value, xMax), 348, String(Math.round(value)), "middle");
-      });
-      drawing += svgText((TRACK_AREA.left + TRACK_AREA.right) / 2, 378, "Horizontal distance (m)", "middle");
-      drawing += `<text class="axis-label" transform="translate(17 205) rotate(-90)" text-anchor="middle">Height (m)</text></g>`;
-
-      const path = model.samples.map((sample, index) =>
-        `${index === 0 ? "M" : "L"}${mapX(sample.x, xMax).toFixed(2)} ${mapHeight(sample.h).toFixed(2)}`
-      ).join(" ");
-      if (baseline) {
-        const baselinePath = baseline.model.samples.map((sample, index) =>
-          `${index === 0 ? "M" : "L"}${mapX(sample.x, xMax).toFixed(2)} ${mapHeight(sample.h).toFixed(2)}`
-        ).join(" ");
-        drawing += `<path class="baseline-track" d="${baselinePath}"></path>`;
-        if (baseline.model.failure) {
-          const x = mapX(baseline.model.failure.x, xMax);
-          const y = mapHeight(baseline.model.failure.h);
-          drawing += `<circle class="baseline-failure-mark" cx="${x}" cy="${y}" r="8" aria-label="Baseline failure point"></circle>`;
-        }
-      }
-      drawing += `<path class="track-path" d="${path}"></path>`;
-      points.forEach((point, index) => {
-        const x = mapX(point.x, xMax);
-        const y = mapHeight(point.h);
-        drawing += `<circle class="control-point" data-index="${index}" cx="${x}" cy="${y}" r="7" tabindex="0" role="button" aria-label="Control point ${index + 1}, ${point.x.toFixed(1)} meters horizontal, ${point.h.toFixed(1)} meters high"></circle>`;
-      });
-
-      if (model.failure) {
-        const failed = model.failure;
-        const x = mapX(failed.x, xMax);
-        const y = mapHeight(failed.h);
-        drawing += `<g aria-label="Failure point"><circle class="failure-mark" cx="${x}" cy="${y}" r="10"></circle><path d="M${x - 4} ${y - 4}L${x + 4} ${y + 4}M${x + 4} ${y - 4}L${x - 4} ${y + 4}" stroke="white" stroke-width="2"></path></g>`;
-      }
-      const car = getSampleAtDistance(currentDistance);
-      const carX = mapX(car.x, xMax);
-      const carY = mapHeight(car.h);
-      const angle = -car.theta * 180 / Math.PI;
-      drawing += `<g transform="translate(${carX} ${carY}) rotate(${angle})" aria-label="Car"><rect class="car-body" x="-13" y="-7" width="26" height="14" rx="5"></rect><circle cx="-7" cy="7" r="2" fill="#d6f36a"></circle><circle cx="7" cy="7" r="2" fill="#d6f36a"></circle></g>`;
-      trackDrawing.innerHTML = drawing;
-    }
-
-    function renderChart(svg, key, minY, maxY, ticks, lineClass, limitValues) {
-      const left = 55;
-      const right = 480;
-      const top = 22;
-      const bottom = 145;
-      const maxDistance = Math.max(model.distance, baseline ? baseline.model.distance : 0, 1);
-      const mapY = value => bottom - ((value - minY) / (maxY - minY)) * (bottom - top);
-      let chart = "";
-      ticks.forEach(value => {
-        const y = mapY(value);
-        chart += `<line class="chart-grid" x1="${left}" y1="${y}" x2="${right}" y2="${y}"></line>`;
-        chart += `<text class="chart-axis" x="${left - 8}" y="${y + 3}" text-anchor="end">${value}</text>`;
-      });
-      chart += `<line class="chart-grid" x1="${left}" y1="${top}" x2="${left}" y2="${bottom}"></line>`;
-      chart += `<line class="chart-grid" x1="${left}" y1="${bottom}" x2="${right}" y2="${bottom}"></line>`;
-      [0, 0.5, 1].forEach(fraction => {
-        const x = left + fraction * (right - left);
-        chart += `<text class="chart-axis" x="${x}" y="164" text-anchor="middle">${Math.round(maxDistance * fraction)}</text>`;
-      });
-      chart += `<text class="chart-axis" x="${(left + right) / 2}" y="183" text-anchor="middle">Distance along track (m)</text>`;
-      (limitValues || []).forEach(value => {
-        const y = mapY(value);
-        chart += `<line class="chart-limit" x1="${left}" y1="${y}" x2="${right}" y2="${y}"></line>`;
-      });
-      if (baseline) {
-        const baselineLine = baseline.model.profile.filter(sample => Number.isFinite(sample[key])).map((sample, index) => {
-          const value = key === "speed" ? sample.speed * METERS_PER_SECOND_TO_MPH : sample.load;
-          return `${index === 0 ? "M" : "L"}${mapDistance(sample.s, maxDistance, left, right).toFixed(2)} ${mapY(value).toFixed(2)}`;
-        }).join(" ");
-        chart += `<path class="chart-baseline" d="${baselineLine}"></path>`;
-        if (baseline.model.failure) {
-          const failureX = mapDistance(baseline.model.failure.s, maxDistance, left, right);
-          chart += `<line class="baseline-chart-failure" x1="${failureX}" y1="${top}" x2="${failureX}" y2="${bottom}"></line>`;
-        }
-      }
-      const visible = model.profile.filter(sample => Number.isFinite(sample[key]));
-      const line = visible.map((sample, index) => {
-        const value = key === "speed" ? sample.speed * METERS_PER_SECOND_TO_MPH : sample.load;
-        return `${index === 0 ? "M" : "L"}${mapDistance(sample.s, maxDistance, left, right).toFixed(2)} ${mapY(value).toFixed(2)}`;
-      }).join(" ");
-      chart += `<path class="${lineClass}" d="${line}"></path>`;
-      if (model.failure) {
-        const failX = mapDistance(model.failure.s, maxDistance, left, right);
-        chart += `<line class="chart-failure" x1="${failX}" y1="${top}" x2="${failX}" y2="${bottom}"></line>`;
-      }
-      const progressX = mapDistance(currentDistance, maxDistance, left, right);
-      chart += `<line class="progress-line" x1="${progressX}" y1="${top}" x2="${progressX}" y2="${bottom}"></line>`;
-      svg.innerHTML = chart;
-    }
-
-    function failureDescription(failure) {
-      if (!failure) {
-        return "";
-      }
-      if (failure.type === "rollback") {
-        return "Rollback: not enough energy to reach the next crest";
-      }
-      if (failure.type === "upper-g") {
-        return "Upper g-force limit exceeded";
-      }
-      return "Lower g-force limit exceeded";
-    }
-
-    function setStatus(message) {
-      statusLine.textContent = message;
-    }
-
-    function updateSummary() {
-      const failure = model.failure;
-      const labels = {
-        ready: ["Ready", failure ? failureDescription(failure) : "No failure detected"],
-        running: ["Riding", `${currentDistance.toFixed(1)} m along the track`],
-        "rolling-back": ["Rolling back", "Car returning down the track"],
-        paused: ["Paused", failure ? failureDescription(failure) : "Ride paused"],
-        complete: ["Complete", failure ? failureDescription(failure) : "No failure detected"],
-        failed: ["Failed", failureDescription(failure)],
-        stalled: ["Stopped", "Track has no downhill gravity at the car"]
-      };
-      const label = labels[rideState] || labels.ready;
-      trackStatus.textContent = label[0];
-      trackStatusCaption.textContent = label[1];
-      pauseButton.disabled = rideState !== "running" && rideState !== "rolling-back";
-      startButton.innerHTML = rideState === "running" || rideState === "rolling-back"
-        ? '<span class="play-icon" aria-hidden="true"></span>Ride in progress'
-        : rideState === "paused"
-          ? '<span class="play-icon" aria-hidden="true"></span>Resume ride'
-          : '<span class="play-icon" aria-hidden="true"></span>Start ride';
-    }
-
-    function updateReadouts() {
-      const sample = getSampleAtDistance(currentDistance);
-      speedReadout.textContent = (sample.speed * METERS_PER_SECOND_TO_MPH).toFixed(2);
-      gReadout.textContent = sample.load.toFixed(2);
-      renderTrack();
-      const speedValues = model.profile.map(item => item.speed);
-      if (baseline) {
-        speedValues.push(...baseline.model.profile.map(item => item.speed));
-      }
-      const speedMaximum = Math.max(60, Math.ceil(Math.max(...speedValues) * METERS_PER_SECOND_TO_MPH / 10) * 10);
-      const speedTicks = Array.from({ length: 4 }, (_, index) => Math.round(speedMaximum * index / 3));
-      renderChart(speedPlot, "speed", 0, speedMaximum, speedTicks, "chart-line", []);
-      renderChart(gPlot, "load", -1.5, 5, [-1, 0, 1, 2, 3, 4, 5], "chart-line-g", [-1, 4]);
-      renderComparison();
-      updateSummary();
-    }
-
-    function modelMetrics(calculatedModel) {
-      const values = calculatedModel.profile;
-      return {
-        maximumSpeed: Math.max(...values.map(sample => sample.speed * METERS_PER_SECOND_TO_MPH)),
-        minimumLoad: Math.min(...values.map(sample => sample.load)),
-        maximumLoad: Math.max(...values.map(sample => sample.load))
-      };
-    }
-
-    function renderComparison() {
-      const hasBaseline = Boolean(baseline);
-      clearBaselineButton.disabled = !hasBaseline;
-      comparisonResults.hidden = !hasBaseline;
-      if (!hasBaseline) {
-        comparisonRows.innerHTML = "";
-        comparisonStatus.textContent = "No baseline saved. The comparison stays in this page only.";
-        return;
-      }
-      const baselineMetrics = modelMetrics(baseline.model);
-      const currentMetrics = modelMetrics(model);
-      const row = (label, metrics) => `<tr><th scope="row">${label}</th><td>${metrics.maximumSpeed.toFixed(2)}</td><td>${metrics.minimumLoad.toFixed(2)}</td><td>${metrics.maximumLoad.toFixed(2)}</td></tr>`;
-      comparisonRows.innerHTML = row("Saved baseline", baselineMetrics) + row("Current design", currentMetrics);
-      comparisonStatus.textContent = "Baseline saved. Reshape the track to compare the two designs.";
-    }
-
-    function saveBaseline() {
-      const savedPoints = points.map(point => ({ ...point }));
-      const savedModel = calculateModel(savedPoints);
-      if (savedModel.error) {
-        comparisonStatus.textContent = `Could not save baseline · ${savedModel.error}`;
-        return;
-      }
-      baseline = { points: savedPoints, model: savedModel };
-      setStatus("Comparison baseline saved");
-      updateReadouts();
-    }
-
-    function clearBaseline() {
-      baseline = null;
-      setStatus("Comparison baseline cleared");
-      updateReadouts();
-    }
-
-    function stopAnimation() {
-      if (frameId) {
-        cancelAnimationFrame(frameId);
-        frameId = 0;
-      }
-      lastFrameTime = 0;
-    }
-
-    function tick(timestamp) {
-      if (rideState !== "running" && rideState !== "rolling-back") {
-        return;
-      }
-      let frameDelta = 0;
-      if (lastFrameTime) {
-        frameDelta = (timestamp - lastFrameTime) / 1000;
-      }
-      lastFrameTime = timestamp;
-
-      const profile = model.profile;
-      const finiteEnd = profile.findLast ? profile.findLast(sample => Number.isFinite(sample.time)) : [...profile].reverse().find(sample => Number.isFinite(sample.time));
-      const motionEndTime = finiteEnd ? finiteEnd.time : 0;
-      if (rideState === "running") {
-        elapsedTime += frameDelta;
-        if (model.stallDistance !== null && elapsedTime >= motionEndTime) {
-          currentDistance = model.stallDistance;
-          rideState = "stalled";
-          stopAnimation();
-        } else if (elapsedTime >= model.duration) {
-          currentDistance = model.endDistance;
-          if (model.failure && model.failure.type === "rollback") {
-            elapsedTime = model.duration;
-            rideState = "rolling-back";
-            setStatus("Rollback · Car returning down the track");
-          } else {
-            rideState = model.failure ? "failed" : "complete";
-            stopAnimation();
+      document.addEventListener("keydown", event => {
+        const target = event.target;
+        if (target && (target.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName))) return;
+        const key = event.key.toLowerCase();
+        if ((event.ctrlKey || event.metaKey) && !event.altKey) {
+          if (key === "z") {
+            event.preventDefault();
+            if (event.shiftKey) redoTrackEdit();
+            else undoTrackEdit();
+          } else if (key === "y") {
+            event.preventDefault();
+            redoTrackEdit();
           }
-        } else {
-          const sample = getSampleAtTime(elapsedTime);
-          currentDistance = sample.s;
+        } else if ((key === "delete" || key === "backspace")
+          && selectedPointIndex > 0 && selectedPointIndex < points.length - 1) {
+          event.preventDefault();
+          removeSelectedPoint();
         }
-      } else {
-        elapsedTime = Math.max(0, elapsedTime - frameDelta);
-        currentDistance = getSampleAtTime(elapsedTime).s;
-        if (elapsedTime <= 0) {
-          rideState = "failed";
-          currentDistance = 0;
-          stopAnimation();
-        }
-      }
-      updateReadouts();
-      if (rideState === "running" || rideState === "rolling-back") {
-        setStatus(rideState === "rolling-back"
-          ? `Rollback · ${currentDistance.toFixed(1)} m back toward the start`
-          : `Riding · ${currentDistance.toFixed(1)} m of ${model.endDistance.toFixed(1)} m`);
-        frameId = requestAnimationFrame(tick);
-      } else if (rideState === "failed") {
-        setStatus(model.failure && model.failure.type === "rollback"
-          ? "Rollback complete · Car returned to the starting hill"
-          : `Ride failed · ${failureDescription(model.failure)}`);
-      } else if (rideState === "complete") {
-        setStatus("Ride complete · No failure detected");
-      } else if (rideState === "stalled") {
-        setStatus("Ride stopped · No downhill gravity can start the car moving");
-      }
-    }
+      });
 
-    function startRide() {
-      if (rideState === "running" || rideState === "rolling-back") {
-        return;
+      function resize() {
+        if (!trackCanvas.clientWidth) return;
+        calculateSamples();
+        updateUI();
       }
-      if (rideState === "paused") {
-        rideState = pausedFrom;
-        lastFrameTime = 0;
-        updateSummary();
-        setStatus(rideState === "rolling-back" ? "Rollback resumed · Car returning down the track" : "Ride resumed");
-        frameId = requestAnimationFrame(tick);
-        return;
+      window.addEventListener("resize", resize);
+      if ("ResizeObserver" in window) {
+        new ResizeObserver(resize).observe(trackCanvas);
+        new ResizeObserver(resize).observe(plotCanvas);
       }
-      if (rideState === "complete" || rideState === "failed" || rideState === "stalled") {
-        currentDistance = 0;
-        elapsedTime = 0;
-      }
-      if (model.failure && model.failure.s <= 1e-7) {
-        currentDistance = model.failure.s;
-        rideState = "failed";
-        setStatus(`Ride failed · ${failureDescription(model.failure)}`);
-        updateReadouts();
-        return;
-      }
-      if (model.duration === 0 && model.stallDistance !== null) {
-        rideState = "stalled";
-        setStatus("Ride stopped · No downhill gravity can start the car moving");
-        updateReadouts();
-        return;
-      }
-      rideState = "running";
-      lastFrameTime = 0;
-      updateSummary();
-      setStatus("Ride started · Car rolling under gravity");
-      frameId = requestAnimationFrame(tick);
-    }
-
-    function pauseRide() {
-      if (rideState !== "running" && rideState !== "rolling-back") {
-        return;
-      }
-      pausedFrom = rideState;
-      stopAnimation();
-      rideState = "paused";
-      setStatus(`Ride paused · ${currentDistance.toFixed(1)} m along the track`);
-      updateReadouts();
-    }
-
-    function resetRide() {
-      stopAnimation();
-      currentDistance = 0;
-      elapsedTime = 0;
-      rideState = "ready";
-      pausedFrom = "running";
-      setStatus("Ready to ride · Drag a point to edit the track");
-      updateReadouts();
-    }
-
-    function refreshAfterEdit(candidate, nextModel) {
-      const wasActive = rideState === "running" || rideState === "rolling-back";
-      pausedFrom = rideState;
-      stopAnimation();
-      points = candidate;
-      model = nextModel;
-      currentDistance = Math.min(currentDistance, model.endDistance);
-      elapsedTime = 0;
-      rideState = wasActive ? "paused" : (rideState === "ready" ? "ready" : "paused");
-      setStatus(wasActive ? "Ride paused · Track updated" : "Track updated · Ride paused at current position");
-      updateReadouts();
-    }
-
-    function svgPointFromEvent(event) {
-      const point = trackSvg.createSVGPoint();
-      point.x = event.clientX;
-      point.y = event.clientY;
-      return point.matrixTransform(trackSvg.getScreenCTM().inverse());
-    }
-
-    function applyDrag(event) {
-      if (dragIndex < 0) {
-        return;
-      }
-      const svgPoint = svgPointFromEvent(event);
-      const xMax = axisMaximum(points);
-      const x = Math.max(0, Math.min(500, (svgPoint.x - TRACK_AREA.left) / (TRACK_AREA.right - TRACK_AREA.left) * xMax));
-      const h = Math.max(0, Math.min(100, (TRACK_AREA.bottom - svgPoint.y) / (TRACK_AREA.bottom - TRACK_AREA.top) * 100));
-      const candidate = points.map(point => ({ ...point }));
-      candidate[dragIndex] = { x: Math.round(x * 10) / 10, h: Math.round(h * 10) / 10 };
-      const result = calculateModel(candidate);
-      if (result.error) {
-        setStatus(`Edit rejected · ${result.error}`);
-        return;
-      }
-      refreshAfterEdit(candidate, result);
-    }
-
-    trackSvg.addEventListener("pointerdown", event => {
-      const handle = event.target.closest && event.target.closest(".control-point");
-      if (!handle) {
-        return;
-      }
-      dragIndex = Number(handle.getAttribute("data-index"));
-      trackSvg.setPointerCapture(event.pointerId);
-      event.preventDefault();
-    });
-    trackSvg.addEventListener("pointermove", event => {
-      if (dragIndex >= 0) {
-        applyDrag(event);
-      }
-    });
-    trackSvg.addEventListener("pointerup", () => { dragIndex = -1; });
-    trackSvg.addEventListener("pointercancel", () => { dragIndex = -1; });
-    trackSvg.addEventListener("keydown", event => {
-      const handle = event.target.closest && event.target.closest(".control-point");
-      if (!handle) {
-        return;
-      }
-      const directions = {
-        ArrowLeft: { x: -1, h: 0 },
-        ArrowRight: { x: 1, h: 0 },
-        ArrowUp: { x: 0, h: 1 },
-        ArrowDown: { x: 0, h: -1 }
-      };
-      const direction = directions[event.key];
-      if (!direction) {
-        return;
-      }
-      event.preventDefault();
-      const index = Number(handle.getAttribute("data-index"));
-      const increment = event.shiftKey ? 10 : 1;
-      const candidate = points.map(point => ({ ...point }));
-      candidate[index] = {
-        x: candidate[index].x + direction.x * increment,
-        h: candidate[index].h + direction.h * increment
-      };
-      const result = calculateModel(candidate);
-      if (result.error) {
-        setStatus(`Edit rejected · ${result.error}`);
-        return;
-      }
-      refreshAfterEdit(candidate, result);
-      const updatedHandle = trackDrawing.querySelector(`.control-point[data-index="${index}"]`);
-      if (updatedHandle) {
-        updatedHandle.focus();
-      }
-    });
-
-    startButton.addEventListener("click", startRide);
-    pauseButton.addEventListener("click", pauseRide);
-    resetButton.addEventListener("click", resetRide);
-    saveBaselineButton.addEventListener("click", saveBaseline);
-    clearBaselineButton.addEventListener("click", clearBaseline);
-
-    model = calculateModel(points);
-    if (model.error) {
-      throw new Error(`Default track is invalid: ${model.error}`);
-    }
-    updateReadouts();
+      loadSavedTrack();
+      updateUndoButton();
+      calculateSamples();
+      updateUI();
+    })();
   </script>
 </body>
 </html>

@@ -1,55 +1,19 @@
 # Roller Coaster Designer
 
-## Description
+A single-file browser simulator for exploring how track height and curvature affect a coaster car's speed and vertical g-force. Open `index.html` in a modern browser.
 
-Roller Coaster Designer is a Python desktop application for creating roller coaster tracks and simulating rides. It displays calculated speed and vertical g-force along the track and checks the simulation against configured g-force safety limits.
+The public repository also retains a separate legacy Tkinter version in `app.py`; it is not required by or integrated with this web app.
 
-## Features
+## Editing a track
 
-- Interactive track editor: drag control points, Shift-click to add a point, or select an interior point and press Delete to remove it.
-- Undo and redo track edits with the toolbar buttons or Ctrl+Z/Ctrl+Y.
-- Play, Pause, Restart, and Reset Track controls.
-- Live coaster speed (mph) and vertical g-force (g) readouts.
-- Speed and vertical g-force plots along horizontal track distance.
-- G-force limit warnings and a marked failure location.
-- Save and Open roller coaster designs as JSON files.
-- Export calculated track data to CSV.
-- Export a PDF report with design inputs, track/simulation diagrams, results, and safety checks.
+- Drag a blue control point to change its position or height.
+- Shift-click the track to insert a new point. Points stay in left-to-right order with at least 2 m between them.
+- Select an interior point and choose **Remove point** or press **Delete**. The first and last points cannot be removed.
+- Use **Undo** and **Redo**, or **Ctrl/Cmd+Z**, **Ctrl/Cmd+Y**, and **Ctrl/Cmd+Shift+Z**. A new edit clears the redo history.
+- **Reset track** restores the starter design. Track edits are also saved in the current browser profile until its site data is cleared.
 
-**Planned:** No additional features are identified as planned in `spec.md`. Features listed there as out of scope, such as friction, air drag, loops, and multiple cars, are not implemented.
+## Ride and file actions
 
-## Requirements
+Use **Play ride**, **Pause ride**, and **Restart** to run the frictionless simulation. The **File** menu saves and opens versioned JSON coaster files. **Export CSV** downloads sampled ride data, including horizontal and cumulative track distance, speed, height, g-force, curvature, and reachability. **Ride report PDF** downloads a calculation sheet with a track diagram, ride inputs, results, and model-limit checks.
 
-- Python 3.11 or later.
-- Tkinter with Tcl/Tk support (normally included with desktop Python distributions).
-- External Python packages: Matplotlib and ReportLab.
-
-## Installation
-
-Install Python 3.11 or later from [python.org](https://www.python.org/downloads/) and ensure the installation includes Tcl/Tk support for Tkinter. Open the project directory in Visual Studio Code, then open a terminal in that directory and install the dependencies:
-
-```shell
-python -m pip install -r requirements.txt
-```
-
-The requirements file installs Matplotlib and ReportLab.
-
-## Running the Application
-
-The Tkinter application entry point is `app.py`. `index.html` is an optional reference to the original application design; it is not integrated into the desktop app and is not needed to run it.
-The existing GitHub Pages site remains live as a separate web version served from `index.html`; Pages does not launch or power the Tkinter desktop app.
-
-In Visual Studio Code, use **File → Open Folder** to open the project directory. Open a terminal with **Terminal → New Terminal**, confirm it is in the project directory, and run:
-
-```shell
-python app.py
-```
-
-## Project Structure
-
-- `app.py` — Tkinter application, track editor, simulation, and file export/import functionality.
-- `spec.md` — Application requirements and design specification.
-- `AGENTS.md` — Standing instructions for AI coding agents working in this project.
-- `prompts.md` — Chronological request and work-outcome log.
-- `requirements.txt` — External Python packages needed by the application.
-- `index.html` — Optional reference to the original application design; it is not used by the desktop application.
+This version models a single-valued height profile; vertical loop geometry, friction, and air drag are not supported. The simulator is educational and does not certify real rides as safe.

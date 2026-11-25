@@ -1,11 +1,12 @@
-# Project Instructions
+# Project layout
 
-- After each request, add an entry to prompts.md: what I asked, what I changed, and whether it worked.
-- Follow the existing `spec.md` as the source of truth.
-- Use Python and Tkinter.
-- The application must launch using `python app.py`.
-- Keep the project files organized.
-- Update documentation whenever application functionality changes.
-- Test changes before marking them as successful.
-- Never claim a feature works unless you have actually tested it.
-- After each request, commit all changes with a clear message.
+This is a single-file web app. Keep `index.html` at the project root so GitHub Pages can serve it. Keep `AGENTS.md`, `spec.md`, and `prompts.md` at the root as well.
+
+Supporting files belong in the numbered folders:
+
+- `00_planning/` — notes and sketches
+- `01_data/` — data files
+- `02_validation/` — hand calculations and test cases
+- `03_output/` — screenshots and exported results
+
+Save every new file in the appropriate root location or numbered folder. Do not add unlisted root files unless the project requires them.

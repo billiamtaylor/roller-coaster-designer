@@ -1,30 +1,15 @@
-# Roller Coaster Designer — Specification (first draft)
+# Roller Coaster Designer — Specification
 
 ## 1. Purpose
 
 An interactive educational simulator for students and hobbyist coaster designers. Users shape a track, then see how gravity affects a coaster car's speed and the vertical acceleration riders experience.
 
-## 1.1 Platform
-
-The application is a local, single-window Python desktop application.
-
-- **Programming language:** Python 3.11 or later. This is required by the current dependency set: Matplotlib 3.11 requires Python 3.11 or later, and ReportLab 5 requires Python 3.10 or later.
-- **User interface:** Tkinter, using its standard widgets, Canvas drawing, and native file dialogs. A Python installation with Tcl/Tk support is required.
-- **Operating systems:** Designed for Windows, macOS, and Linux desktop systems where Python and Tkinter are available. Windows is the environment currently verified for this project; macOS and Linux have not been independently tested.
-- **External dependencies:** Matplotlib and ReportLab, listed in `requirements.txt`. From the project folder, install them with `python -m pip install -r requirements.txt`. Tkinter and the modules for JSON, CSV, math, temporary files, and date/time are part of Python's standard library.
-- **Application entry point:** `app.py`.
-- **How to run:** From the project folder, run `python app.py`.
-- **File handling:** Save and Open use JSON (`.json`) design files. Simulation data can be exported as CSV (`.csv`) for spreadsheet applications such as Microsoft Excel. Design reports are generated as PDF (`.pdf`) files.
-- **Development environment:** A Python 3.11+ installation with pip and Tcl/Tk, plus a terminal and a code editor such as Visual Studio Code. Install dependencies using the command above, then launch with `python app.py`.
-
-Saving and reopening roller coaster designs, CSV simulation exports, and PDF design reports are implemented features.
-
 ## 2. Inputs
 
 | Input | Unit | Range/options | Default | Control |
 |---|---|---|---|---|
-| Track control-point horizontal position | m | 0–100; points remain in left-to-right order | Starter track points | Drag a point on the track canvas |
-| Track control-point height | m | 0–60 | Starter track points | Drag a point on the track canvas |
+| Track control-point horizontal position | m | 0–100; at least 2 m between points | Starter track points | Drag a point; Shift-click the canvas to insert one |
+| Track control-point height | m | 0–60 | Starter track points | Drag a point; select an interior point to remove it |
 | Playback | — | Play, pause, restart | Paused at the starting crest | Buttons |
 
 The car starts from rest at the first (leftmost) crest. The starting crest is the first control point. The initial model has no friction or air drag.
@@ -51,15 +36,29 @@ Use SI units internally. Let `g = 9.81 m/s²`.
 
 ## 5. Look and feel
 
-Show the track editor, ride controls, live readouts, and plots together on the initial screen. Make track points draggable, allow adding points with Shift-click and removing selected interior points, and provide undo/redo for track edits. Provide clear feedback for the starting point and any failure marker. On phones, stack the controls, track, readouts, and plots vertically; keep touch targets large enough to use comfortably.
+Show the track editor, ride controls, live readouts, and plots together on the initial screen. Make track points draggable and provide clear feedback for the starting point, selected point, and any failure marker. On phones, stack the controls, track, readouts, and plots vertically; keep touch targets large enough to use comfortably.
 
-## 6. Validation
+## 6. Features
+
+- **Persistent track autosave (original feature):** Save edited control points in the browser and restore them when the app is opened again in the same browser profile. Show whether the current design was restored or saved. The design remains available unless browser site data is cleared.
+- **Track editing and recovery:** Shift-click to insert a control point at the clicked position; select an interior point and remove it without removing either endpoint. Undo and redo track edits with buttons or Ctrl/Cmd+Z, Ctrl/Cmd+Y, and Ctrl/Cmd+Shift+Z. Keep the edit history bounded and clear redo history when a new edit is made.
+- **Design files:** A File menu saves the supported track points, fixed ride settings, starting position, and current car position to a versioned JSON design file. Open validates the file and restores the design with playback paused. Loop geometry is not part of this version's height-profile model.
+- **Ride data export:** Export sampled horizontal distance, cumulative track distance, speed, height, signed vertical g-force, curvature, and reachability to an Excel-compatible CSV file.
+- **Ride calculation sheet:** Generate a one-page PDF with the ride inputs, track diagram, key calculated results, energy and g-force checks, and an educational-use disclaimer.
+
+## 7. Validation
 
 Hand check with `g = 9.81 m/s²`, no friction, a starting crest at `h0 = 30 m`, and a bottom point at `h = 0 m`. The expected speed is `sqrt(2 × 9.81 × (30 - 0)) = sqrt(588.6) = 24.26 m/s = 54.27 mph` (rounded to two decimals).
 
 For a valley radius `R = 20 m` at that bottom point, expected vertical g-force is `1 + 24.26²/(9.81 × 20) = 4.00 g` (rounded to two decimals; calculate using unrounded speed).
 
-## 7. Out of scope
+For persistence, move a control point, reload the page, and confirm the same point is restored. Then undo a drag and reset the track, confirming the readouts and plots recalculate after each action.
+
+For editing history, Shift-click between existing points, verify order and spacing are preserved, remove the selected interior point, and verify both operations can be undone and redone with buttons and keyboard shortcuts. Confirm endpoints cannot be removed and a new edit clears the redo history.
+
+For design files, save an edited design, reopen it, and verify all supported track points and car position are restored. Confirm malformed or unsupported files produce a visible error. For exports, check that the CSV includes each sampled track location and the PDF includes the requested summary metrics, track diagram, and both safety checks.
+
+## 8. Out of scope
 
 - Real-world structural, aerodynamic, or vehicle design certification.
 - Friction, air drag, powered lift hills, loops, thrill scoring, or multiple cars in this first version.
